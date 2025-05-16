@@ -106,11 +106,11 @@ impl RunCode for PythonRunner {
 
         info!("执行命令: {:?}", &execute_command);
 
-        let tokio_child_command = TokioHeapSize::default();
-        // 设置堆大小限制
-        tokio_child_command
-            .with_heap_limit(&mut execute_command)
-            .await;
+        // let tokio_child_command = TokioHeapSize::default();
+        // // 设置堆大小限制
+        // tokio_child_command
+        //     .with_heap_limit(&mut execute_command)
+        //     .await;
 
         //限制command 的执行超时时间
         let executor = match timeout_seconds {

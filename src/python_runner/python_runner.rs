@@ -66,11 +66,14 @@ impl RunCode for PythonRunner {
                 let cmd_str = format!("{:?}", &cmd);
                 info!("uv命令字符串: {}", cmd_str);
 
-                let cmd_output = cmd
-                    .kill_on_drop(true)
-                    .output()
-                    .await
-                    .context("Failed to add dependencies with uv")?;
+                let cmd_output = match cmd.kill_on_drop(true).output().await {
+                    Ok(output) => output,
+                    Err(e) => {
+                        error!("安装Python依赖失败: {:?}", e);
+                        error!("失败的命令: {:?}", cmd);
+                        return Err(e).context("Failed to add dependencies with uv");
+                    }
+                };
 
                 let stdout = String::from_utf8_lossy(&cmd_output.stdout).to_string();
                 let stderr = String::from_utf8_lossy(&cmd_output.stderr).to_string();

@@ -181,8 +181,8 @@ pub struct TokioHeapSize {
 
 impl Default for TokioHeapSize {
     fn default() -> Self {
-        // 堆大小限制为 1GB
-        Self::new(1024 * 1024 * 1024)
+        // 堆大小限制为 2GB
+        Self::new(2048 * 1024 * 1024)
     }
 }
 

@@ -103,6 +103,8 @@ impl RunCode for PythonRunner {
             .env("INPUT_JSON", &params_json) // 通过环境变量传递参数
             .arg(&temp_path)
             .kill_on_drop(true);
+        
+        info!("执行命令: {:?}", &execute_command);
 
         let tokio_child_command = TokioHeapSize::default();
         // 设置堆大小限制

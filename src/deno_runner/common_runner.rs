@@ -1,7 +1,7 @@
 use crate::cache::CodeFileCache;
 use crate::model::{CodeExecutor, CodeScriptExecutionResult, CommandExecutor, LanguageScript};
 use anyhow::{Context, Result};
-use log::debug;
+use log::{debug, info};
 use serde_json::Value;
 use tokio::process::Command;
 
@@ -58,6 +58,7 @@ where
         Some(timeout) => CommandExecutor::with_timeout(execute_command.output(), timeout),
         None => CommandExecutor::default(execute_command.output()),
     };
+    info!("执行命令: {:?}", &execute_command);
 
     let output = executor
         .await?

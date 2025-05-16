@@ -39,7 +39,12 @@ async fn warm_up_python_env(custom_deps: Option<Vec<String>>) -> Result<()> {
         info!("预热进度: {}% - 正在安装Python依赖: {}", progress, dep);
 
         let mut cmd = Command::new("uv");
-        cmd.args(["pip", "install", dep]).kill_on_drop(true);
+        cmd.arg("pip")
+            .arg("install")
+            .arg("-p")
+            .arg("3.13")
+            .arg(dep)
+            .kill_on_drop(true);
 
         match CommandExecutor::with_timeout(cmd.status(), 60).await {
             Ok(Ok(status)) => {

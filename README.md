@@ -58,6 +58,12 @@ cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"nu
 cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"list"}'
 cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"dict"}'
 
+# 执行带pandas的Python函数测试
+cargo run -- --show-logs python -f fixtures/rfunction_test2.py -p '{"params": {"input": "test_value"}}'
+
+# 使用MCP SDK执行带pandas的Python函数测试
+cargo run -- --use-mcp --show-logs python -f fixtures/rfunction_test2.py -p '{"params": {"input": "test_value"}}'
+
 # 直接执行JavaScript代码
 cargo run -- js -c "function handler(input) { return 'Hello from JS: ' + input.name; }" -p '{"name":"User"}'
 

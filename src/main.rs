@@ -70,11 +70,16 @@ struct CodeArgs {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // 初始化日志
-    env_logger::init();
-
     // 解析命令行参数
     let cli = Cli::parse();
+
+    // 初始化日志
+    let mut builder = env_logger::Builder::from_default_env();
+    if cli.show_logs {
+        // 如果--show-logs参数为true，则至少显示info级别的日志
+        builder.filter_level(log::LevelFilter::Info);
+    }
+    builder.init();
 
     match &cli.command {
         Commands::ClearCache { language } => {

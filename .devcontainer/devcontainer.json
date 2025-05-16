@@ -3,7 +3,12 @@
 {
 	"name": "Rust",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/rust:1-1-bullseye",
+	// "image": "mcr.microsoft.com/devcontainers/rust:1-1-bullseye",
+		// 使用你自定义的Dockerfile
+	"build": {
+		"dockerfile": "../Dockerfile",
+		"context": ".."
+	},
 	"features": {
 		"ghcr.io/devcontainers/features/go:1": {},
 		"ghcr.io/devcontainers-community/features/deno:1": {},

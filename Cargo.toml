@@ -4,6 +4,7 @@ description = "云函数服务,执行JS/TS/Python语言代码,脚本必须有约
 version = "0.0.15"
 edition = "2024"
 license = "MIT"
+default-run = "run_code_rmcp"
 
 [dependencies]
 tokio = { version = "1.45", features = [

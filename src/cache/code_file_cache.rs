@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use blake3;
+use log::info;
 use std::path::{Path, PathBuf};
 use tokio::fs::{self, File, create_dir_all};
 use tokio::io::AsyncWriteExt;
@@ -13,7 +14,9 @@ impl CodeFileCache {
     pub fn obtain_code_hash(code: &str) -> String {
         // 使用BLAKE3计算哈希，更快速且安全
         let hash = blake3::hash(code.as_bytes());
-        hash.to_hex().to_string()
+        let hash_str = hash.to_hex().to_string();
+        info!("计算代码hash值: {}", &hash_str);
+        hash_str
     }
 
     /// 根据代码的hash检查是否存在缓存

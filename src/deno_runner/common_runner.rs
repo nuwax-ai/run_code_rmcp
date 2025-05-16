@@ -1,7 +1,7 @@
 use crate::cache::CodeFileCache;
 use crate::model::{CodeExecutor, CodeScriptExecutionResult, CommandExecutor, LanguageScript};
 use anyhow::{Context, Result};
-use log::{debug, info};
+use log::{debug, error, info};
 use serde_json::Value;
 use tokio::process::Command;
 
@@ -60,10 +60,20 @@ where
     };
     info!("执行命令: {:?}", &execute_command);
 
-    let output = executor
-        .await?
-        .context(format!("Failed to execute {:?} with Deno", lang))?;
-
+    let executor_result = executor.await;
+    let output = match executor_result {
+        Ok(cmd_result) => match cmd_result {
+            Ok(output) => output,
+            Err(e) => {
+                error!("Deno命令执行失败 [{:?}]: {:?}", lang, e);
+                return Err(e).context(format!("Failed to execute {:?} with Deno", lang));
+            }
+        },
+        Err(e) => {
+            error!("Deno任务执行异常 [{:?}]: {:?}", lang, e);
+            return Err(e).context(format!("Deno executor await error for {:?}", lang));
+        }
+    };
     debug!("标准输出:\n{}", String::from_utf8_lossy(&output.stdout));
     debug!("错误输出:\n{}", String::from_utf8_lossy(&output.stderr));
 

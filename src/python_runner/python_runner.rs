@@ -8,7 +8,7 @@ use crate::{
     python_runner::parse_import,
 };
 use anyhow::{Context, Result};
-use log::{debug, info, warn};
+use log::{debug, error, info, warn};
 use serde_json;
 use tokio::process::Command;
 
@@ -103,7 +103,7 @@ impl RunCode for PythonRunner {
             .env("INPUT_JSON", &params_json) // 通过环境变量传递参数
             .arg(&temp_path)
             .kill_on_drop(true);
-        
+
         info!("执行命令: {:?}", &execute_command);
 
         let tokio_child_command = TokioHeapSize::default();
@@ -118,9 +118,20 @@ impl RunCode for PythonRunner {
             None => CommandExecutor::default(execute_command.output()),
         };
 
-        let output = executor
-            .await?
-            .context("Failed to execute Python with uv")?;
+        let executor_result = executor.await;
+        let output = match executor_result {
+            Ok(cmd_result) => match cmd_result {
+                Ok(output) => output,
+                Err(e) => {
+                    error!("Python命令执行失败: {:?}", e);
+                    return Err(e).context("Failed to execute Python with uv");
+                }
+            },
+            Err(e) => {
+                error!("Python任务执行异常: {:?}", e);
+                return Err(e).context("Python executor await error");
+            }
+        };
         // 调试输出
         let stdout = String::from_utf8_lossy(&output.stdout).to_string();
         let stderr = String::from_utf8_lossy(&output.stderr).to_string();
@@ -133,13 +144,12 @@ impl RunCode for PythonRunner {
 }
 
 impl PythonRunner {
-
     /// 准备Python代码，添加日志捕获和handler函数执行逻辑
     fn prepare_python_code(&self, code: &str, show_logs: bool) -> String {
         let show_logs_value = if show_logs { "True" } else { "False" };
-        
+
         let template = include_str!("../templates/python_template.py");
-        
+
         template
             .replace("{{USER_CODE}}", code)
             .replace("{{SHOW_LOGS}}", show_logs_value)

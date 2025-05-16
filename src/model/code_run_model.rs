@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::{Context as AnyHowContext, Result};
-use log::info;
+use log::{info, warn};
 use pin_project::pin_project;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -252,10 +252,13 @@ impl<F: Future> Future for CommandExecutor<F> {
         match this.future.poll(cx) {
             Poll::Ready(result) => Poll::Ready(Ok(result)),
             Poll::Pending => match this.timeout.poll(cx) {
-                Poll::Ready(()) => Poll::Ready(Err(io::Error::new(
-                    io::ErrorKind::TimedOut,
-                    "future timed out",
-                ))),
+                Poll::Ready(()) => {
+                    warn!("执行命令超时");
+                    Poll::Ready(Err(io::Error::new(
+                        io::ErrorKind::TimedOut,
+                        "future timed out",
+                    )))
+                },
                 Poll::Pending => Poll::Pending,
             },
         }

@@ -1,5 +1,5 @@
 use crate::model::CommandExecutor;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use log::{info, warn};
 use tokio::process::Command;
 
@@ -39,12 +39,22 @@ async fn warm_up_python_env(custom_deps: Option<Vec<String>>) -> Result<()> {
         info!("预热进度: {}% - 正在安装Python依赖: {}", progress, dep);
 
         let mut cmd = Command::new("uv");
-        cmd.args(["pip", "install", dep]);
+        cmd.args(["pip", "install", dep]).kill_on_drop(true);
 
-        let status = CommandExecutor::with_timeout(cmd.status(), 60).await??;
-
-        if !status.success() {
-            warn!("安装依赖 {} 失败", dep);
+        match CommandExecutor::with_timeout(cmd.status(), 60).await {
+            Ok(Ok(status)) => {
+                if !status.success() {
+                    warn!("安装依赖 {} 失败", dep);
+                }
+            }
+            Ok(Err(e)) => {
+                warn!("命令执行失败: {} - 依赖: {}", e, dep);
+                continue;
+            }
+            Err(e) => {
+                warn!("执行超时或系统错误: {} - 依赖: {}", e, dep);
+                continue;
+            }
         }
     }
 
@@ -139,10 +149,20 @@ async fn warm_up_js_env(
         let mut cmd = Command::new("deno");
         cmd.args(["cache", "--reload", &format!("npm:{}", pkg)]);
 
-        let status = CommandExecutor::with_timeout(cmd.status(), 60).await??;
-
-        if !status.success() {
-            warn!("缓存npm包 {} 失败", pkg);
+        match CommandExecutor::with_timeout(cmd.status(), 60).await {
+            Ok(Ok(status)) => {
+                if !status.success() {
+                    warn!("缓存npm包 {} 失败", pkg);
+                }
+            }
+            Ok(Err(e)) => {
+                warn!("命令执行失败: {} - 包: {}", e, pkg);
+                continue;
+            }
+            Err(e) => {
+                warn!("执行超时或系统错误: {} - 包: {}", e, pkg);
+                continue;
+            }
         }
     }
 
@@ -155,10 +175,20 @@ async fn warm_up_js_env(
         let mut cmd = Command::new("deno");
         cmd.args(["cache", "--reload", &format!("jsr:{}", pkg)]);
 
-        let status = CommandExecutor::with_timeout(cmd.status(), 60).await??;
-
-        if !status.success() {
-            warn!("缓存JSR包 {} 失败", pkg);
+        match CommandExecutor::with_timeout(cmd.status(), 60).await {
+            Ok(Ok(status)) => {
+                if !status.success() {
+                    warn!("缓存JSR包 {} 失败", pkg);
+                }
+            }
+            Ok(Err(e)) => {
+                warn!("命令执行失败: {} - 包: {}", e, pkg);
+                continue;
+            }
+            Err(e) => {
+                warn!("执行超时或系统错误: {} - 包: {}", e, pkg);
+                continue;
+            }
         }
     }
 
@@ -171,10 +201,20 @@ async fn warm_up_js_env(
         let mut cmd = Command::new("deno");
         cmd.args(["cache", "--reload", &format!("node:{}", module)]);
 
-        let status = CommandExecutor::with_timeout(cmd.status(), 60).await??;
-
-        if !status.success() {
-            warn!("缓存Node.js模块 {} 失败", module);
+        match CommandExecutor::with_timeout(cmd.status(), 60).await {
+            Ok(Ok(status)) => {
+                if !status.success() {
+                    warn!("缓存Node.js模块 {} 失败", module);
+                }
+            }
+            Ok(Err(e)) => {
+                warn!("命令执行失败: {} - 模块: {}", e, module);
+                continue;
+            }
+            Err(e) => {
+                warn!("执行超时或系统错误: {} - 包: {}", e, module);
+                continue;
+            }
         }
     }
 

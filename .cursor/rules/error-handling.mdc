@@ -1,0 +1,101 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 错误处理
+
+本项目使用[anyhow](mdc:https:/crates.io/crates/anyhow)和[thiserror](mdc:https:/crates.io/crates/thiserror)库进行错误处理，错误类型定义在[error.rs](mdc:src/error.rs)中。
+
+## 错误类型
+
+```rust
+#[derive(Error, Debug)]
+pub enum AppError {
+    #[error("Failed to execute code: {0}")]
+    ExecutionError(String),
+    
+    #[error("Failed to parse output: {0}")]
+    ParseError(String),
+    
+    #[error("Failed to create temporary file: {0}")]
+    IoError(#[from] std::io::Error),
+    
+    #[error("Failed to parse JSON: {0}")]
+    JsonError(#[from] serde_json::Error),
+    
+    #[error("Missing required field: {0}")]
+    MissingField(String),
+    
+    #[error("Unsupported language: {0}")]
+    UnsupportedLanguage(String),
+    
+    #[error("Handler function not found")]
+    HandlerNotFound,
+    
+    #[error("MCP error: {0}")]
+    McpError(String),
+    
+    #[error("{0}")]
+    Other(String),
+}
+
+pub type AppResult<T> = Result<T, AppError>;
+```
+
+## 错误处理流程
+
+1. 在代码执行过程中使用`anyhow::Result`类型传递错误
+2. 使用`?`操作符传播错误
+3. 使用`context`方法添加错误上下文
+4. 在`main`函数中处理所有未捕获的错误
+
+## 示例
+
+```rust
+// 读取代码文件
+fn get_code(args: &CodeArgs) -> Result<String> {
+    if let Some(file) = &args.file {
+        fs::read_to_string(file).context("Failed to read code file")
+    } else if let Some(code) = &args.code {
+        Ok(code.clone())
+    } else {
+        anyhow::bail!("Either file or code must be provided")
+    }
+}
+
+// 执行JavaScript代码
+fn execute_js(code: &str, show_logs: bool) -> Result<ExecutionResult> {
+    // Prepare the JavaScript code with wrapped handler
+    let wrapped_code = prepare_js_code(code, show_logs);
+
+    // Create a temporary file
+    let mut temp_file = NamedTempFile::new()?;
+    write!(temp_file.as_file_mut(), "{}", wrapped_code)?;
+
+    // Execute with Deno
+    let output = Command::new("deno")
+        .arg("run")
+        .arg("--allow-all")
+        .arg(temp_file.path())
+        .output()
+        .context("Failed to execute Deno")?;
+
+    // Parse the output
+    parse_execution_output(&output.stdout, &output.stderr)
+}
+```
+
+## 错误输出
+
+执行结果中的错误通过`ExecutionResult`结构体的`error`字段返回，并在`print_result`函数中输出：
+
+```rust
+fn print_result(result: ExecutionResult) {
+    // ...
+
+    if let Some(error) = result.error {
+        eprintln!("Error: {}", error);
+    }
+}
+```

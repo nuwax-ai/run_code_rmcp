@@ -1,0 +1,109 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 代码执行流程
+
+本项目的核心功能是执行JavaScript、TypeScript和Python代码，并捕获执行结果。以下是代码执行的主要流程：
+
+## 代码执行模型
+
+项目使用模块化的代码执行模型，定义在[src/model/code_run_model.rs](mdc:src/model/code_run_model.rs)中：
+
+```rust
+/// 执行结果,包含js/python 执行结果,和打印的log日志
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CodeScriptExecutionResult {
+    //js/python 执行结果
+    pub result: Option<Value>,
+    //js/python 打印的log日志
+    pub logs: Vec<String>,
+    // 是否执行成功,ture:默认值,执行成功
+    #[serde(skip_serializing)]
+    pub success: bool,
+    //如果执行错误的话,错误信息
+    #[serde(skip_serializing)]
+    pub error: Option<String>,
+}
+
+/// 代码执行器
+pub struct CodeExecutor;
+
+impl CodeExecutor {
+    /// 执行代码
+    pub async fn execute(
+        code: &str,
+        language: LanguageScript,
+    ) -> Result<CodeScriptExecutionResult> {
+        Self::execute_with_params(code, language, None).await
+    }
+
+    /// 执行代码并传递参数
+    pub async fn execute_with_params(
+        code: &str,
+        language: LanguageScript,
+        params: Option<serde_json::Value>,
+    ) -> Result<CodeScriptExecutionResult> {
+        match language {
+            LanguageScript::Js => JsRunner::new().run_with_params(code, params).await,
+            LanguageScript::Ts => TsRunner::new().run_with_params(code, params).await,
+            LanguageScript::Python => PythonRunner::new().run_with_params(code, params).await,
+        }
+    }
+}
+```
+
+## 语言特定执行器
+
+### JavaScript执行器
+
+JavaScript代码通过[JsRunner](mdc:src/deno_runner/js_runner.rs)执行：
+
+1. 准备JavaScript代码，添加日志捕获和handler函数执行逻辑
+2. 使用代码哈希值缓存处理过的代码
+3. 使用Deno执行代码
+4. 解析执行结果
+
+### TypeScript执行器
+
+TypeScript代码通过[TsRunner](mdc:src/deno_runner/ts_runner.rs)执行：
+
+1. 准备TypeScript代码，添加日志捕获和handler函数执行逻辑
+2. 使用代码哈希值缓存处理过的代码
+3. 使用Deno执行代码
+4. 解析执行结果
+
+### Python执行器
+
+Python代码通过[PythonRunner](mdc:src/python_runner/python_runner.rs)执行：
+
+1. 分析Python代码的依赖
+2. 准备Python代码，添加日志捕获和handler/main函数执行逻辑
+3. 使用代码哈希值缓存处理过的代码
+4. 使用uv在隔离环境中执行Python代码
+5. 解析执行结果
+
+## 参数传递
+
+参数通过JSON格式传递给脚本：
+
+1. JavaScript/TypeScript：参数直接传递给handler函数
+2. Python：参数通过环境变量`INPUT_JSON`传递，然后在脚本中解析并传递给handler或main函数
+
+## 结果处理
+
+执行结果通过[CodeScriptExecutionResult](mdc:src/model/code_run_model.rs)结构体表示，包含：
+
+- result: 执行结果（通过handler/main函数返回）
+- logs: 执行过程中的日志
+- success: 执行是否成功
+- error: 执行错误（如果有）
+
+## 缓存机制
+
+为了提高性能，项目使用[CodeFileCache](mdc:src/cache)缓存处理过的代码：
+
+1. 计算代码的哈希值
+2. 检查是否存在对应的缓存
+3. 如果存在，直接使用缓存；否则处理代码并缓存结果

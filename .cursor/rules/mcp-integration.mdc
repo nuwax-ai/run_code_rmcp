@@ -1,0 +1,146 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# MCP SDK集成
+
+本项目支持Model Context Protocol (MCP) SDK集成，允许通过标准化协议执行代码。MCP相关功能主要在[mcp.rs](mdc:src/mcp.rs)中实现。
+
+## 核心数据结构
+
+```rust
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CodeExecutionParams {
+    pub code: String,
+    pub language: String,
+    pub show_logs: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CodeExecutionResult {
+    pub logs: Vec<String>,
+    pub result: Option<String>,
+    pub error: Option<String>,
+}
+```
+
+## JavaScript执行
+
+MCP中的JavaScript执行使用以下包装代码：
+
+```javascript
+// MCP SDK integration for JavaScript
+// Note: MCP SDK is not required for basic functionality
+
+// Log capture setup
+const logs = [];
+const originalConsoleLog = console.log;
+console.log = function() {
+    const message = Array.from(arguments).map(arg => 
+        typeof arg === 'object' && arg !== null ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    logs.push(message);
+    if (show_logs) {
+        originalConsoleLog.apply(console, arguments);
+    }
+};
+
+async function mcpExecute() {
+    try {
+        // User code here
+
+        // Execute handler
+        let result = null;
+        if (typeof handler === 'function') {
+            result = await handler();
+        }
+
+        return {
+            logs: logs,
+            result: result !== undefined ? String(result) : null,
+            error: null
+        };
+    } catch (error) {
+        return {
+            logs: logs,
+            result: null,
+            error: error.toString()
+        };
+    }
+}
+
+// Execute and return results
+mcpExecute().then(result => {
+    originalConsoleLog(JSON.stringify(result));
+});
+```
+
+## Python执行
+
+MCP中的Python执行使用以下包装代码：
+
+```python
+# MCP SDK integration for Python
+# Note: MCP SDK is not required for basic functionality
+import sys
+import json
+import io
+from contextlib import redirect_stdout
+
+# Store logs
+logs = []
+
+# Create custom stdout to capture logs
+class LogCapture(io.StringIO):
+    def write(self, text):
+        if text.strip():
+            logs.append(text.rstrip())
+            if show_logs:
+                sys.__stdout__.write(text)
+
+def mcp_execute():
+    try:
+        // User code here
+
+        // Execute handler function and capture result
+        result = None
+        with redirect_stdout(LogCapture()):
+            if 'handler' in globals() and callable(handler):
+                result = handler()
+        
+        return {
+            "logs": logs,
+            "result": str(result) if result is not None else None,
+            "error": None
+        }
+    except Exception as e:
+        return {
+            "logs": logs,
+            "result": None,
+            "error": str(e)
+        }
+
+# Execute and print results
+result = mcp_execute()
+print(json.dumps(result))
+```
+
+## 执行流程
+
+MCP执行流程由[execute_with_mcp](mdc:src/mcp.rs#L138)函数处理：
+
+1. 创建临时文件并写入包装后的代码
+2. 根据语言类型选择执行命令（Deno或uv）
+3. 执行代码并捕获输出
+4. 解析JSON格式的执行结果
+5. 如果无法解析JSON，则返回原始输出
+
+## 使用方法
+
+在命令行中使用`--use-mcp`参数启用MCP SDK集成：
+
+```bash
+cargo run -- --use-mcp js -c "function handler() { return 'Hello from MCP JS'; }"
+cargo run -- --use-mcp python -f examples/test_python.py
+```

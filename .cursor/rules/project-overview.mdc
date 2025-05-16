@@ -1,0 +1,50 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 项目概述
+
+这是一个使用Rust开发的命令行工具，用于执行JavaScript、TypeScript和Python代码。该工具支持以下功能：
+
+1. 执行JavaScript代码（使用Deno运行时）
+2. 执行TypeScript代码（使用Deno运行时）
+3. 执行Python代码（使用uv提供隔离环境）
+4. 捕获并区分脚本中的日志输出和执行结果
+5. 支持JavaScript/TypeScript的handler函数和Python的handler/main函数作为执行结果的返回点
+6. 通过环境变量传递参数给脚本
+7. 可以通过参数控制是否显示日志输出
+8. 支持MCP SDK集成
+
+## 主要文件
+
+- [src/main.rs](mdc:src/main.rs) - 应用程序入口点，处理命令行参数和执行流程
+- [src/lib.rs](mdc:src/lib.rs) - 库入口点，导出模块和类型
+- [src/model/code_run_model.rs](mdc:src/model/code_run_model.rs) - 代码执行模型和结果处理
+- [src/deno_runner/js_runner.rs](mdc:src/deno_runner/js_runner.rs) - JavaScript代码执行器
+- [src/deno_runner/ts_runner.rs](mdc:src/deno_runner/ts_runner.rs) - TypeScript代码执行器
+- [src/python_runner/python_runner.rs](mdc:src/python_runner/python_runner.rs) - Python代码执行器
+- [src/cache/](mdc:src/cache) - 代码缓存管理
+- [fixtures/](mdc:fixtures) - 测试脚本示例
+
+## 使用示例
+
+```bash
+# 执行JavaScript文件
+cargo run -- --show-logs js -f fixtures/test_js.js
+
+# 执行TypeScript文件
+cargo run -- --show-logs ts -f fixtures/test_ts.ts
+
+# 执行Python文件
+cargo run -- --show-logs python -f fixtures/test_python.py
+
+# 带参数执行Python文件
+cargo run -- --show-logs python -f fixtures/test_python_params.py -p '{"a":10, "b":20}'
+
+# 直接执行JavaScript代码
+cargo run -- js -c "function handler(input) { return 'Hello from JS: ' + input.name; }" -p '{"name":"User"}'
+
+# 直接执行Python代码
+cargo run -- python -c "def handler(args): return 'Hello from Python: ' + args.get('name', 'Guest')" -p '{"name":"User"}'
+```

@@ -1,0 +1,143 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Python代码执行
+
+本项目使用`uv`在隔离环境中执行Python代码，提供安全可靠的执行环境。以下是Python代码执行的详细流程：
+
+## Python运行器
+
+Python代码通过[PythonRunner](mdc:src/python_runner/python_runner.rs)执行，实现了`RunCode`特性：
+
+```rust
+pub struct PythonRunner;
+
+impl RunCode for PythonRunner {
+    async fn run(&self, code: &str) -> Result<CodeScriptExecutionResult> {
+        // 实现代码...
+    }
+
+    async fn run_with_params(&self, code: &str, params: Option<serde_json::Value>) -> Result<CodeScriptExecutionResult> {
+        // 实现代码...
+    }
+}
+```
+
+## 依赖解析
+
+Python代码的依赖通过[python_dependencies.rs](mdc:src/python_runner/dependencies/python_dependencies.rs)解析：
+
+1. 使用Pest解析器分析Python代码中的import语句
+2. 支持常规import语句和importlib动态导入
+3. 提取所有导入的模块名称
+
+```rust
+pub fn parse_import(python_code: &str) -> Result<Vec<String>> {
+    // 使用Pest解析器分析Python代码
+    let pairs = ImportParser::parse(Rule::file, &input)?;
+    
+    // 提取模块名称
+    let mut imported_modules = Vec::new();
+    // 处理各种import语句...
+    
+    Ok(imported_modules)
+}
+```
+
+## 代码准备
+
+Python代码在执行前需要进行包装，添加日志捕获和函数执行逻辑：
+
+```rust
+fn prepare_python_code(&self, code: &str, show_logs: bool) -> String {
+    // 创建包装代码，包括：
+    // 1. 日志捕获
+    // 2. 参数解析
+    // 3. 执行handler或main函数
+    // 4. 结果格式化
+}
+```
+
+包装代码主要功能：
+1. 捕获标准输出作为日志
+2. 从环境变量`INPUT_JSON`解析参数
+3. 优先执行`handler`函数，如果不存在则执行`main`函数
+4. 将执行结果和日志格式化为JSON
+
+## 参数传递
+
+参数通过环境变量`INPUT_JSON`传递给Python脚本：
+
+```rust
+// 将参数序列化为JSON字符串
+let params_json = match params {
+    Some(p) => serde_json::to_string(&p)?,
+    None => "{}".to_string(),
+};
+
+// 通过环境变量传递参数
+execute_command.env("INPUT_JSON", &params_json);
+```
+
+在Python脚本中，参数通过以下方式获取：
+
+```python
+# 从环境变量获取输入参数
+args = {}
+try:
+    input_json = os.environ.get('INPUT_JSON')
+    if input_json:
+        args = json.loads(input_json)
+except Exception as e:
+    print(f"解析输入参数失败: {e}")
+```
+
+## 执行流程
+
+1. 计算代码哈希值，检查缓存
+2. 如果缓存存在，直接使用；否则：
+   - 分析代码依赖
+   - 准备包装后的代码
+   - 保存到缓存
+3. 使用`uv`命令在隔离环境中执行代码：
+   ```rust
+   let mut execute_command = Command::new("uv");
+   execute_command
+       .arg("run")
+       .arg("-s") // 明确指定作为脚本运行
+       .arg("--isolated") // 在隔离环境中运行
+       .arg("-p")
+       .arg("python3") // 指定Python解释器
+       .env("INPUT_JSON", &params_json) // 通过环境变量传递参数
+       .arg(&temp_path)
+   ```
+4. 解析执行结果，提取日志和返回值
+
+## 结果处理
+
+执行结果通过JSON格式返回，包含三个字段：
+- `logs`: 执行过程中的日志数组
+- `result`: 执行结果（可能是字符串、数字、布尔值、对象等）
+- `error`: 执行错误（如果有）
+
+```json
+{
+  "logs": ["日志1", "日志2", ...],
+  "result": "执行结果",
+  "error": null
+}
+```
+
+## 支持的返回类型
+
+Python脚本可以返回多种类型的值：
+1. 字符串
+2. 数字
+3. 布尔值
+4. 列表/数组
+5. 字典/对象
+6. None/null
+
+所有复杂类型（列表、字典）都会被序列化为JSON字符串。

@@ -1,0 +1,138 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 示例代码
+
+本项目包含JavaScript和Python的示例代码，用于测试代码执行功能。
+
+## JavaScript示例
+
+[examples/test_js.js](mdc:examples/test_js.js)是一个简单的JavaScript示例，包含：
+
+```javascript
+// Sample JavaScript file with handler function
+
+// Log some debug information
+console.log("Initializing JavaScript test...");
+
+// Define a simple add function
+function add(a, b) {
+    console.log(`Adding ${a} + ${b}`);
+    return a + b;
+}
+
+// Some processing
+const numbers = [1, 2, 3, 4, 5];
+console.log("Processing numbers:", numbers);
+
+// Handler function that will be called to get the result
+function handler() {
+    console.log("Handler function called");
+    
+    // Calculate sum
+    const sum = numbers.reduce((acc, num) => add(acc, num), 0);
+    console.log("Final calculation completed");
+    
+    return `The sum of [${numbers.join(", ")}] is ${sum}`;
+} 
+```
+
+执行这个示例将输出：
+
+```
+--- Logs ---
+Initializing JavaScript test...
+Processing numbers: [1,2,3,4,5]
+Handler function called
+Adding 0 + 1
+Adding 1 + 2
+Adding 3 + 3
+Adding 6 + 4
+Adding 10 + 5
+Final calculation completed
+------------
+Result: The sum of [1, 2, 3, 4, 5] is 15
+```
+
+## Python示例
+
+[examples/test_python.py](mdc:examples/test_python.py)是一个简单的Python示例，包含：
+
+```python
+#!/usr/bin/env python3
+# Sample Python file with handler function
+
+import time
+
+# Log some debug information
+print("Initializing Python test...")
+
+# Define a simple function
+def multiply(a, b):
+    print(f"Multiplying {a} * {b}")
+    return a * b
+
+# Some processing
+numbers = [1, 2, 3, 4, 5]
+print(f"Processing numbers: {numbers}")
+
+# Handler function that will be called to get the result
+def handler():
+    print("Handler function called")
+    
+    # Calculate product
+    product = 1
+    for num in numbers:
+        product = multiply(product, num)
+    
+    print("Final calculation completed")
+    
+    return f"The product of {numbers} is {product}"
+
+# This part won't be executed when the code is run through the MCP runner
+if __name__ == "__main__":
+    print("Running directly, calling handler...")
+    result = handler()
+    print(f"Result: {result}")
+```
+
+执行这个示例将输出：
+
+```
+--- Logs ---
+Handler function called
+Multiplying 1 * 1
+Multiplying 1 * 2
+Multiplying 2 * 3
+Multiplying 6 * 4
+Multiplying 24 * 5
+Final calculation completed
+------------
+Result: The product of [1, 2, 3, 4, 5] is 120
+```
+
+## 如何创建自己的示例
+
+创建自己的示例代码时，需要遵循以下规则：
+
+1. 必须包含一个名为`handler`的函数，作为执行结果的返回点
+2. `handler`函数的返回值将作为执行结果
+3. 使用`console.log`（JavaScript）或`print`（Python）输出日志
+4. 可以定义其他函数和变量，它们将在执行过程中被使用
+
+示例：
+
+```javascript
+// JavaScript示例
+function handler() {
+    return "Hello from JavaScript!";
+}
+```
+
+```python
+# Python示例
+def handler():
+    return "Hello from Python!"
+```

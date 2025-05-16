@@ -1,0 +1,73 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 项目依赖
+
+本项目使用多个Rust库来实现其功能。以下是主要依赖项及其用途：
+
+## Cargo.toml
+
+```toml
+[dependencies]
+tokio = { version = "1.32", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
+env_logger = "0.10"
+anyhow = "1.0"
+rmcp="0.1"
+tempfile = "3.8"
+regex = "1.9"
+clap = { version = "4.4", features = ["derive"] }
+thiserror = "1.0"
+```
+
+## 主要依赖项
+
+### 异步运行时
+
+- [tokio](https://crates.io/crates/tokio): 异步运行时，用于支持异步/await语法和并发执行
+
+### 序列化/反序列化
+
+- [serde](https://crates.io/crates/serde): 通用序列化/反序列化框架
+- [serde_json](https://crates.io/crates/serde_json): JSON序列化/反序列化支持
+
+### 错误处理
+
+- [anyhow](https://crates.io/crates/anyhow): 简化错误处理的库
+- [thiserror](https://crates.io/crates/thiserror): 用于定义自定义错误类型
+
+### 日志记录
+
+- [log](https://crates.io/crates/log): 日志记录接口
+- [env_logger](https://crates.io/crates/env_logger): 基于环境变量的日志记录器
+
+### 命令行参数解析
+
+- [clap](https://crates.io/crates/clap): 命令行参数解析库，支持派生宏
+
+### 其他工具
+
+- [rmcp](https://crates.io/crates/rmcp): Model Context Protocol (MCP) SDK
+- [tempfile](https://crates.io/crates/tempfile): 临时文件创建和管理
+- [regex](https://crates.io/crates/regex): 正则表达式支持
+
+## 外部依赖
+
+除了Rust库外，本项目还依赖以下外部工具：
+
+1. [Deno](https://deno.land/): 现代JavaScript和TypeScript运行时，用于执行JavaScript代码
+2. [uv](https://github.com/astral-sh/uv): Python包管理器和隔离环境工具，用于安全执行Python代码
+
+## 安装外部依赖
+
+```bash
+# 安装Deno
+curl -fsSL https://deno.land/x/install/install.sh | sh
+
+# 安装uv
+curl -fsSL https://astral.sh/uv/install.sh | sh
+```

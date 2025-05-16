@@ -2,6 +2,9 @@
 # Sample Python file with handler function
 
 import time
+time.time()
+# Debug print to confirm script execution
+print("DEBUGGING: Script is being executed!")
 
 # Log some debug information
 print("Initializing Python test...")

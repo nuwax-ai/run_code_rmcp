@@ -1,0 +1,98 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 测试脚本示例指南
+
+本项目包含多种语言的测试脚本示例，位于`fixtures`目录下。这些示例展示了如何编写可被本工具执行的JavaScript、TypeScript和Python脚本。
+
+## JavaScript示例
+
+### 基本执行
+
+[test_js.js](mdc:fixtures/test_js.js) - 基本的JavaScript执行示例：
+- 展示了如何使用`console.log`输出日志
+- 定义了`handler`函数作为执行结果的返回点
+
+### 参数传递
+
+[test_js_params.js](mdc:fixtures/test_js_params.js) - 带参数的JavaScript执行示例：
+- 展示了如何接收和处理传入的参数
+- 演示了如何根据参数执行不同的逻辑
+
+### 函数示例
+
+[rfunction_test1.js](mdc:fixtures/rfunction_test1.js) - 函数式JavaScript示例：
+- 展示了如何定义和使用函数
+- 演示了如何处理和返回复杂数据结构
+
+## TypeScript示例
+
+### 基本执行
+
+[test_ts.ts](mdc:fixtures/test_ts.ts) - 基本的TypeScript执行示例：
+- 展示了TypeScript的类型定义
+- 定义了带类型的`handler`函数
+
+### 参数传递
+
+[test_ts_params.ts](mdc:fixtures/test_ts_params.ts) - 带参数的TypeScript执行示例：
+- 展示了如何定义参数类型
+- 演示了TypeScript中的类型安全参数处理
+
+## Python示例
+
+### 基本执行
+
+[test_python.py](mdc:fixtures/test_python.py) - 基本的Python执行示例：
+- 使用`handler`函数作为执行结果的返回点
+- 展示了如何使用Python进行基本计算和日志输出
+
+### 参数传递
+
+[test_python_params.py](mdc:fixtures/test_python_params.py) - 带参数的Python执行示例：
+- 展示了如何接收和处理传入的参数
+- 演示了如何返回包含多个字段的结果
+
+### 类型示例
+
+[test_python_types.py](mdc:fixtures/test_python_types.py) - 不同返回类型的Python示例：
+- 展示了如何返回不同类型的值（字符串、数字、布尔值、列表、字典等）
+- 演示了不同类型在JSON序列化中的处理方式
+
+### 函数示例
+
+[rfunction_python.py](mdc:fixtures/rfunction_python.py) - 函数式Python示例：
+- 展示了如何定义和使用Python函数
+- 演示了如何处理和返回复杂数据结构
+
+## 使用示例
+
+以下是如何使用这些示例脚本的命令：
+
+```bash
+# 执行基本JavaScript示例
+cargo run -- --show-logs js -f fixtures/test_js.js
+
+# 执行带参数的JavaScript示例
+cargo run -- --show-logs js -f fixtures/test_js_params.js -p '{"name":"User"}'
+
+# 执行基本TypeScript示例
+cargo run -- --show-logs ts -f fixtures/test_ts.ts
+
+# 执行带参数的TypeScript示例
+cargo run -- --show-logs ts -f fixtures/test_ts_params.ts -p '{"a":10, "b":20, "name":"User"}'
+
+# 执行基本Python示例
+cargo run -- --show-logs python -f fixtures/test_python.py
+
+# 执行带参数的Python示例
+cargo run -- --show-logs python -f fixtures/test_python_params.py -p '{"a":10, "b":20}'
+
+# 执行不同类型的Python示例
+cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"string"}'
+cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"number"}'
+cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"list"}'
+cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"dict"}'
+```

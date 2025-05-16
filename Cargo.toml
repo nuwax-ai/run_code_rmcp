@@ -1,7 +1,7 @@
 [package]
 name = "run_code_rmcp"
 description = "云函数服务,执行JS/TS/Python语言代码,脚本必须有约定的函数名称(handler/main),会调用约定的函数名称结果和日志返回.注: 非稳定版本,开发中"
-version = "0.0.15"
+version = "0.0.16"
 edition = "2024"
 license = "MIT"
 default-run = "run_code_rmcp"

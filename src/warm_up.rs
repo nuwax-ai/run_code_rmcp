@@ -1,5 +1,5 @@
 use crate::model::CommandExecutor;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use log::{info, warn};
 use tokio::process::Command;
 
@@ -152,7 +152,8 @@ async fn warm_up_js_env(
         info!("预热进度: {}% - 正在缓存npm包: {}", progress, pkg);
 
         let mut cmd = Command::new("deno");
-        cmd.args(["cache", "--reload", &format!("npm:{}", pkg)]);
+        cmd.args(["cache", "--reload", &format!("npm:{}", pkg)])
+            .kill_on_drop(true);
 
         match CommandExecutor::with_timeout(cmd.status(), 60).await {
             Ok(Ok(status)) => {
@@ -178,7 +179,8 @@ async fn warm_up_js_env(
         info!("预热进度: {}% - 正在缓存JSR包: {}", progress, pkg);
 
         let mut cmd = Command::new("deno");
-        cmd.args(["cache", "--reload", &format!("jsr:{}", pkg)]);
+        cmd.args(["cache", "--reload", &format!("jsr:{}", pkg)])
+            .kill_on_drop(true);
 
         match CommandExecutor::with_timeout(cmd.status(), 60).await {
             Ok(Ok(status)) => {
@@ -204,7 +206,8 @@ async fn warm_up_js_env(
         info!("预热进度: {}% - 正在缓存Node.js模块: {}", progress, module);
 
         let mut cmd = Command::new("deno");
-        cmd.args(["cache", "--reload", &format!("node:{}", module)]);
+        cmd.args(["cache", "--reload", &format!("node:{}", module)])
+            .kill_on_drop(true);
 
         match CommandExecutor::with_timeout(cmd.status(), 60).await {
             Ok(Ok(status)) => {

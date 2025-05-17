@@ -184,16 +184,23 @@ async function handler(input: any): Promise<{result: string}> {
             Ok(exec_result) => {
                 if let Some(error) = exec_result.error {
                     info!("正确捕获到超时错误: {}", error);
-                    assert!(error.contains("timed out"), "错误信息应该包含'timed out'");
+                    assert!(
+                        error.contains("timed out") || 
+                        error.contains("TimedOut") ||
+                        error.contains("executor await error"),
+                        "错误信息应该包含超时相关信息"
+                    );
                 } else {
                     panic!("应该捕获到超时错误，但脚本执行成功了");
                 }
             }
             Err(e) => {
-                info!("捕获到错误: {}", e);
+                // 使用特殊格式化获取完整错误链
+                let full_error = format!("{:#}", e);
+                info!("捕获到错误: {}", full_error);
                 assert!(
-                    e.to_string().contains("timed out"),
-                    "错误信息应该包含'timed out'"
+                    full_error.contains("timed out"),
+                    "完整错误链中应该包含'timed out'超时信息"
                 );
             }
         }

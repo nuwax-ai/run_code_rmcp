@@ -127,12 +127,12 @@ impl RunCode for PythonRunner {
                 Ok(output) => output,
                 Err(e) => {
                     error!("Python命令执行失败: {:?}", e);
-                    return Err(e).context("Failed to execute Python with uv");
+                    return Err(e.into());
                 }
             },
             Err(e) => {
                 error!("Python任务执行异常: {:?}", e);
-                return Err(e).context("Python executor await error");
+                return Err(e.into());
             }
         };
         // 调试输出

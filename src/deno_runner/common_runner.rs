@@ -66,12 +66,12 @@ where
             Ok(output) => output,
             Err(e) => {
                 error!("Deno命令执行失败 [{:?}]: {:?}", lang, e);
-                return Err(e).context(format!("Failed to execute {:?} with Deno", lang));
+                return Err(e.into());
             }
         },
         Err(e) => {
             error!("Deno任务执行异常 [{:?}]: {:?}", lang, e);
-            return Err(e).context(format!("Deno executor await error for {:?}", lang));
+            return Err(e.into());
         }
     };
     debug!("标准输出:\n{}", String::from_utf8_lossy(&output.stdout));

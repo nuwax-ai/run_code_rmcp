@@ -42,20 +42,23 @@ let result = null;
 // 异步立即执行函数
 (async () => {
     try {
-        if (typeof handler === 'function') {
-            // 检查handler是否是异步函数
+        // 优先检查main函数
+        if (typeof main === 'function') {
+            // 检查main是否是异步函数
+            if (main.constructor.name === 'AsyncFunction') {
+                result = await main(input);
+            } else {
+                result = main(input);
+            }
+        } else if (typeof handler === 'function') {
+            // 如果没有main函数，检查handler
             if (handler.constructor.name === 'AsyncFunction') {
                 result = await handler(input);
             } else {
                 result = handler(input);
             }
-        } else if (typeof default_1 === 'function') {
-            // 支持export default形式的handler
-            if (default_1.constructor.name === 'AsyncFunction') {
-                result = await default_1(input);
-            } else {
-                result = default_1(input);
-            }
+        }else{
+            throw new Error("没有找到main或handler函数");
         }
 
         // 打印最终输出为JSON

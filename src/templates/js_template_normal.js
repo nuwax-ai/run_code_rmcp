@@ -40,15 +40,26 @@ try {
         {{USER_CODE}}
         // 用户代码结束
 
-        // 执行handler函数并获取结果
+        // 执行函数并获取结果
         let result = null;
-        if (typeof handler === 'function') {
-            // 检查handler是否是异步函数
+        
+        // 优先检查main函数
+        if (typeof main === 'function') {
+            // 检查main是否是异步函数
+            if (main.constructor.name === 'AsyncFunction') {
+                result = await main(input);
+            } else {
+                result = main(input);
+            }
+        } else if (typeof handler === 'function') {
+            // 如果没有main函数，检查handler
             if (handler.constructor.name === 'AsyncFunction') {
                 result = await handler(input);
             } else {
                 result = handler(input);
             }
+        } else {
+            throw new Error("没有找到main或handler函数");
         }
 
         // 打印最终输出为JSON

@@ -599,4 +599,61 @@ async function handler(input) {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn test_js_main_function() -> Result<()> {
+        // 初始化日志
+        setup();
+
+        // 从 fixtures 目录读取测试脚本
+        let code = std::fs::read_to_string("fixtures/rfunction_js_test3.js")?;
+        info!("读取测试脚本: rfunction_js_test3.js");
+
+        // 准备参数
+        let params = json!({
+            "testKey": "测试值"
+        });
+        info!("准备测试参数: {:?}", params);
+
+        // 执行脚本
+        info!("开始执行JavaScript脚本...");
+        let result =
+            CodeExecutor::execute_with_params_compat(&code, LanguageScript::Js, Some(params))
+                .await?;
+        info!("脚本执行完成, 日志: {:?}", result.logs);
+
+        if let Some(error) = &result.error {
+            info!("执行错误: {}", error);
+        } else {
+            info!("脚本执行成功");
+        }
+
+        if let Some(result_val) = &result.result {
+            info!("执行结果: {:?}", result_val);
+        } else {
+            info!("无执行结果");
+        }
+
+        // 验证结果
+        assert!(!result.logs.is_empty(), "日志不应为空");
+        assert!(result.error.is_none(), "不应有错误");
+        assert!(result.result.is_some(), "应有返回结果");
+
+        // 验证返回值
+        if let Some(result_val) = result.result {
+            // 检查结果是否包含预期的字段
+            let json_str = serde_json::to_string(&result_val)?;
+            assert!(json_str.contains("key"), "结果应包含 key 字段");
+            assert!(json_str.contains("value"), "key 字段的值应为 value");
+            
+            // 检查JSON结构
+            if let Some(obj) = result_val.as_object() {
+                if let Some(key_value) = obj.get("key") {
+                    assert_eq!(key_value, "value", "key 字段的值应为 value");
+                }
+            }
+        }
+
+        Ok(())
+    }
 }

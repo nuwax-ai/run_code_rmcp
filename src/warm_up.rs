@@ -4,6 +4,9 @@ use log::{info, warn};
 use tokio::process::Command;
 use std::path::Path;
 
+//定义国内python加速地址: https://pypi.tuna.tsinghua.edu.cn/simple
+const PYTHON_ACCELERATION_ADDRESS: &str = "https://pypi.tuna.tsinghua.edu.cn/simple";
+
 //使用 uv安装 python 3.13，比如： uv python install 3.13
 async fn install_python_3_13() -> Result<()> {
     let mut cmd = Command::new("uv");
@@ -106,6 +109,8 @@ async fn warm_up_python_env(custom_deps: Option<Vec<String>>) -> Result<()> {
             .arg("-p")
             .arg("3.13")
             .arg(dep)
+            .arg("--default-index")
+            .arg(PYTHON_ACCELERATION_ADDRESS)
             .kill_on_drop(true);
 
         match CommandExecutor::with_timeout(cmd.status(), 60).await {

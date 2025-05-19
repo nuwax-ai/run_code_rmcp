@@ -3,7 +3,6 @@ use crate::{
     cache::CodeFileCache,
     model::{
         CodeExecutor, CodeScriptExecutionResult, CommandExecutor, LanguageScript, RunCode,
-        TokioHeapSize,
     },
     python_runner::parse_import,
 };
@@ -68,7 +67,7 @@ impl RunCode for PythonRunner {
                 //添加 python加速地址
                 cmd.arg("--default-index")
                     .arg(PYTHON_ACCELERATION_ADDRESS);
-                
+
                 // 打印 cmd 命令,可以直接复制执行的命令字符串
                 let cmd_str = format!("{:?}", &cmd);
                 info!("uv命令字符串: {}", cmd_str);

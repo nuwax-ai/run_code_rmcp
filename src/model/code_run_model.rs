@@ -192,6 +192,7 @@ impl TokioHeapSize {
     }
 
     /// 启动带有堆内存限制的子进程，返回 tokio::process::Child
+    #[allow(dead_code)]
     pub async fn with_heap_limit(&self, command: &mut Command) {
         #[cfg(target_os = "linux")]
         {

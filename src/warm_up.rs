@@ -108,9 +108,9 @@ async fn warm_up_python_env(custom_deps: Option<Vec<String>>) -> Result<()> {
             .arg("install")
             .arg("-p")
             .arg("3.13")
-            .arg(dep)
             .arg("--default-index")
             .arg(PYTHON_ACCELERATION_ADDRESS)
+            .arg(dep)
             .kill_on_drop(true);
 
         match CommandExecutor::with_timeout(cmd.status(), 60).await {

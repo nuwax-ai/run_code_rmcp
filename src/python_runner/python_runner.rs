@@ -1,9 +1,7 @@
 //通过 uv 命令,来运行 python脚本
 use crate::{
     cache::CodeFileCache,
-    model::{
-        CodeExecutor, CodeScriptExecutionResult, CommandExecutor, LanguageScript, RunCode,
-    },
+    model::{CodeExecutor, CodeScriptExecutionResult, CommandExecutor, LanguageScript, RunCode},
     python_runner::parse_import,
 };
 use anyhow::{Context, Result};
@@ -59,14 +57,13 @@ impl RunCode for PythonRunner {
                 cmd.arg("add")
                     .arg("--script")
                     .arg(&run_code_script_file_path);
-
+                //添加 python加速地址
+                cmd.arg("--default-index").arg(PYTHON_ACCELERATION_ADDRESS);
+                
                 // 为每个依赖添加一个参数
                 for dep in &dependencies {
                     cmd.arg(dep);
                 }
-                //添加 python加速地址
-                cmd.arg("--default-index")
-                    .arg(PYTHON_ACCELERATION_ADDRESS);
 
                 // 打印 cmd 命令,可以直接复制执行的命令字符串
                 let cmd_str = format!("{:?}", &cmd);
@@ -104,16 +101,16 @@ impl RunCode for PythonRunner {
 
         // 使用uv run命令执行Python脚本，提供隔离环境
         let mut execute_command = Command::new("uv");
-        //还需要指定国内镜像地址,参考示例: uv run -s -p 3.13 d5ebe48b7d9da8cb835af6ef77b212921f9a44881fb232837b4dcc6ebecf9401.py --default-index https://pypi.tuna.tsinghua.edu.cn/simple 
+        //还需要指定国内镜像地址,参考示例: uv run -s -p 3.13 d5ebe48b7d9da8cb835af6ef77b212921f9a44881fb232837b4dcc6ebecf9401.py --default-index https://pypi.tuna.tsinghua.edu.cn/simple
         execute_command
             .arg("run")
             .arg("-s") // 明确指定作为脚本运行
             .arg("-p")
             .arg("3.13") // 指定Python解释器版本3.13
+            .arg("--default-index")
+            .arg(PYTHON_ACCELERATION_ADDRESS)
             .env("INPUT_JSON", &params_json) // 通过环境变量传递参数
             .arg(&temp_path)
-            .arg("--default-index")
-            .arg(PYTHON_ACCELERATION_ADDRESS) 
             .kill_on_drop(true);
 
         info!("执行命令: {:?}", &execute_command);

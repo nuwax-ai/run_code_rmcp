@@ -30,29 +30,6 @@ async fn install_python_3_13() -> Result<()> {
     }
 }
 
-//uv venv 3.13
-async fn create_python_3_13_venv() -> Result<()> {
-    let mut cmd = Command::new("uv");
-    cmd.arg("venv").arg("3.13").kill_on_drop(true);
-    match CommandExecutor::with_timeout(cmd.status(), 60).await {
-        Ok(Ok(status)) => {
-            if !status.success() {
-                warn!("创建Python 3.13虚拟环境失败");
-                return Err(anyhow::anyhow!("创建Python 3.13虚拟环境失败"));
-            }
-            info!("创建Python 3.13虚拟环境成功");
-            Ok(())
-        }
-        Ok(Err(e)) => {
-            warn!("命令执行失败: {}", e);
-            return Err(anyhow::anyhow!("命令执行失败: {}", e));
-        }
-        Err(e) => {
-            warn!("执行超时或系统错误: {}", e);
-            return Err(anyhow::anyhow!("执行超时或系统错误: {}", e));
-        }
-    }
-}
 
 /// 预热Python环境，安装常用依赖
 async fn warm_up_python_env(custom_deps: Option<Vec<String>>) -> Result<()> {
@@ -293,9 +270,6 @@ pub async fn warm_up_all_envs(
     // 安装Python 3.13
     if let Err(e) = install_python_3_13().await {
         warn!("安装Python 3.13失败: {}", e);
-    }
-    if let Err(e) = create_python_3_13_venv().await {
-        warn!("创建Python 3.13虚拟环境失败: {}", e);
     }
 
     // 预热Python环境

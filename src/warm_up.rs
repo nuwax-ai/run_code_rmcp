@@ -4,8 +4,8 @@ use log::{info, warn};
 use tokio::process::Command;
 use std::path::Path;
 
-//定义国内python加速地址: https://pypi.tuna.tsinghua.edu.cn/simple
-const PYTHON_ACCELERATION_ADDRESS: &str = "https://pypi.tuna.tsinghua.edu.cn/simple";
+//定义国内python加速地址: https://mirrors.aliyun.com/pypi/simple
+const PYTHON_ACCELERATION_ADDRESS: &str = "https://mirrors.aliyun.com/pypi/simple";
 
 //使用 uv安装 python 3.13，比如： uv python install 3.13
 async fn install_python_3_13() -> Result<()> {

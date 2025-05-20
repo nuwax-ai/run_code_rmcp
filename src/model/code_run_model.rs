@@ -138,8 +138,11 @@ impl CodeExecutor {
             let result = if parsed["result"].is_null() {
                 None
             } else if let Some(result_str) = parsed["result"].as_str() {
-                // 如果是字符串，保持为字符串类型
-                Some(Value::String(result_str.to_string()))
+                // 如果是字符串，尝试解析为JSON对象
+                match serde_json::from_str::<Value>(result_str) {
+                    Ok(json_value) => Some(json_value),
+                    Err(_) => Some(Value::String(result_str.to_string())),
+                }
             } else {
                 // 其他类型（数字、布尔值等）直接使用
                 Some(parsed["result"].clone())
@@ -259,7 +262,7 @@ impl<F: Future> Future for CommandExecutor<F> {
                         io::ErrorKind::TimedOut,
                         "future timed out",
                     )))
-                },
+                }
                 Poll::Pending => Poll::Pending,
             },
         }

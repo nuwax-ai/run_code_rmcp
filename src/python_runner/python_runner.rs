@@ -59,7 +59,7 @@ impl RunCode for PythonRunner {
                     .arg(&run_code_script_file_path);
                 //添加 python加速地址
                 cmd.arg("--default-index").arg(PYTHON_ACCELERATION_ADDRESS);
-                
+
                 // 为每个依赖添加一个参数
                 for dep in &dependencies {
                     cmd.arg(dep);
@@ -105,8 +105,8 @@ impl RunCode for PythonRunner {
         execute_command
             .arg("run")
             .arg("-s") // 明确指定作为脚本运行
-            .arg("-p")
-            .arg("3.13") // 指定Python解释器版本3.13
+            // .arg("-p")
+            // .arg("3.13") // 指定Python解释器版本3.13
             .arg("--default-index")
             .arg(PYTHON_ACCELERATION_ADDRESS)
             .env("INPUT_JSON", &params_json) // 通过环境变量传递参数

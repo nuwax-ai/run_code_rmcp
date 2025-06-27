@@ -108,8 +108,6 @@ async fn warm_up_python_env(custom_deps: Option<Vec<String>>) -> Result<()> {
         let mut cmd = Command::new("uv");
         cmd.arg("pip")
             .arg("install")
-            .arg("-p")
-            .arg("3.13")
             .arg("--default-index")
             .arg(PYTHON_ACCELERATION_ADDRESS)
             .arg(dep)

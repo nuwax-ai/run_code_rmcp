@@ -229,7 +229,7 @@ pub struct CommandExecutor<F> {
 
 impl<F> CommandExecutor<F> {
     pub fn default(future: F) -> Self {
-        let timeout = sleep(Duration::from_secs(120));
+        let timeout = sleep(Duration::from_secs(180));
 
         Self { timeout, future }
     }

@@ -1,8 +1,8 @@
 use crate::model::CommandExecutor;
 use anyhow::Result;
 use log::{info, warn};
-use tokio::process::Command;
 use std::path::Path;
+use tokio::process::Command;
 
 //定义国内python加速地址: https://mirrors.aliyun.com/pypi/simple
 const PYTHON_ACCELERATION_ADDRESS: &str = "https://mirrors.aliyun.com/pypi/simple";
@@ -14,7 +14,7 @@ async fn install_python_3_13() -> Result<()> {
         .arg("install")
         .arg("3.13")
         .kill_on_drop(true);
-    match CommandExecutor::with_timeout(cmd.status(), 200).await {
+    match CommandExecutor::with_timeout(cmd.status(), 600).await {
         Ok(Ok(status)) => {
             if !status.success() {
                 warn!("安装Python 3.13失败");
@@ -37,18 +37,18 @@ async fn install_python_3_13() -> Result<()> {
 // 检查 uv 虚拟环境是否存在
 async fn check_and_create_uv_venv() -> Result<()> {
     info!("检查 uv 虚拟环境...");
-    
+
     // 检查 .venv 目录是否存在
     if Path::new(".venv").exists() {
         info!("uv 虚拟环境已存在");
         return Ok(());
     }
-    
+
     info!("未检测到 uv 虚拟环境，开始创建...");
     let mut cmd = Command::new("uv");
     cmd.arg("venv").kill_on_drop(true);
-    
-    match CommandExecutor::with_timeout(cmd.status(), 60).await {
+
+    match CommandExecutor::with_timeout(cmd.status(), 600).await {
         Ok(Ok(status)) => {
             if !status.success() {
                 warn!("创建 uv 虚拟环境失败");
@@ -84,6 +84,8 @@ async fn warm_up_python_env(custom_deps: Option<Vec<String>>) -> Result<()> {
         "fastapi",
         "uvicorn",
         "sqlalchemy",
+        "opencv-python",
+        "python-docx",
     ];
 
     // 使用自定义依赖或默认依赖
@@ -113,7 +115,7 @@ async fn warm_up_python_env(custom_deps: Option<Vec<String>>) -> Result<()> {
             .arg(dep)
             .kill_on_drop(true);
 
-        match CommandExecutor::with_timeout(cmd.status(), 60).await {
+        match CommandExecutor::with_timeout(cmd.status(), 600).await {
             Ok(Ok(status)) => {
                 if !status.success() {
                     warn!("安装依赖 {} 失败", dep);
@@ -222,7 +224,7 @@ async fn warm_up_js_env(
         cmd.args(["cache", "--reload", &format!("npm:{}", pkg)])
             .kill_on_drop(true);
 
-        match CommandExecutor::with_timeout(cmd.status(), 60).await {
+        match CommandExecutor::with_timeout(cmd.status(), 600).await {
             Ok(Ok(status)) => {
                 if !status.success() {
                     warn!("缓存npm包 {} 失败", pkg);
@@ -249,7 +251,7 @@ async fn warm_up_js_env(
         cmd.args(["cache", "--reload", &format!("jsr:{}", pkg)])
             .kill_on_drop(true);
 
-        match CommandExecutor::with_timeout(cmd.status(), 60).await {
+        match CommandExecutor::with_timeout(cmd.status(), 600).await {
             Ok(Ok(status)) => {
                 if !status.success() {
                     warn!("缓存JSR包 {} 失败", pkg);
@@ -276,7 +278,7 @@ async fn warm_up_js_env(
         cmd.args(["cache", "--reload", &format!("node:{}", module)])
             .kill_on_drop(true);
 
-        match CommandExecutor::with_timeout(cmd.status(), 60).await {
+        match CommandExecutor::with_timeout(cmd.status(), 600).await {
             Ok(Ok(status)) => {
                 if !status.success() {
                     warn!("缓存Node.js模块 {} 失败", module);

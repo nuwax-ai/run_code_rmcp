@@ -1,13 +1,16 @@
 [package]
 name = "run_code_rmcp"
-description = "云函数服务,执行JS/TS/Python语言代码,脚本必须有约定的函数名称(handler/main),会调用约定的函数名称结果和日志返回.注: 非稳定版本,开发中"
-version = "0.0.30"
+description = "云函数服务,执行JS/TS/Python语言代码,脚本必须有约定的函数名称(handler/main),会调用约定的函数名称结果和日志返回."
+version = "0.0.31"
 edition = "2024"
 license = "MIT"
+repository = "https://github.com/nuwax-ai/run_code_rmcp"
+homepage = "https://nuwax.com/"
+readme = "README.md"
 default-run = "run_code_rmcp"
 
 [dependencies]
-tokio = { version = "1.45", features = [
+tokio = { version = "1.47", features = [
     "fs",
     "macros",
     "net",
@@ -22,28 +25,29 @@ serde_json = "1.0"
 log = "0.4"
 env_logger = "0.11"
 anyhow = "1.0"
-rmcp = { version = "0.1", features = [
+rmcp = { version = "0.5", features = [
     "server",
     "client",
     "transport-sse-server",
-    "transport-sse",
+    "transport-sse-client",
+    "transport-streamable-http-client",
+    "transport-streamable-http-server",
     "transport-child-process",
     "transport-io",
-    "macros",
+    "reqwest",
 ] }
 tempfile = "3.20"
 regex = "1.9"
 clap = { version = "4.5", features = ["derive"] }
 thiserror = "2.0"
-pest = { version = "2.6", features = ["pretty-print"] }
-pest_derive = "2.6"
+pest = { version = "2.8", features = ["pretty-print"] }
+pest_derive = "2.8"
 blake3 = "1.8"
 pin-project = "1.1"
 libc = "0.2"
 once_cell = "1.21"
-schemars = "0.8"
+schemars = "1.0"
 async-trait = "0.1"
-# axum = { version = "0.7", features = ["http2"] }
 
 [[bin]]
 name = "script_runner"

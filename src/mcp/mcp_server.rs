@@ -1,11 +1,11 @@
 use anyhow::Result;
-use log::info;
 use rmcp::{
-    Error as McpError, ServerHandler,
+    ErrorData as McpError, ServerHandler,
+    handler::server::tool::Parameters,
     model::{
         CallToolResult, Content, Implementation, ProtocolVersion, ServerCapabilities, ServerInfo,
     },
-    tool,
+    tool, tool_handler, tool_router,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -26,13 +26,14 @@ pub struct CodeRunRequest {
 #[derive(Debug, Clone, Default)]
 pub struct CodeRunnerService;
 
-#[tool(tool_box)]
+#[tool_router]
 impl CodeRunnerService {
     #[tool(description = "执行JavaScript代码并返回结果")]
     async fn run_javascript(
         &self,
-        #[tool(aggr)] request: CodeRunRequest,
+        request: Parameters<CodeRunRequest>,
     ) -> Result<CallToolResult, McpError> {
+        let request = request.0;
         match CodeExecutor::execute_with_params_compat(
             &request.code,
             LanguageScript::Js,
@@ -71,8 +72,9 @@ impl CodeRunnerService {
     #[tool(description = "执行TypeScript代码并返回结果")]
     async fn run_typescript(
         &self,
-        #[tool(aggr)] request: CodeRunRequest,
+        request: Parameters<CodeRunRequest>,
     ) -> Result<CallToolResult, McpError> {
+        let request = request.0;
         match CodeExecutor::execute_with_params_compat(
             &request.code,
             LanguageScript::Ts,
@@ -108,11 +110,12 @@ impl CodeRunnerService {
         }
     }
 
-    #[tool(description = "执行Python代码并返回结果")]
+    #[rmcp::tool(description = "执行Python代码并返回结果")]
     async fn run_python(
         &self,
-        #[tool(aggr)] request: CodeRunRequest,
+        request: Parameters<CodeRunRequest>,
     ) -> Result<CallToolResult, McpError> {
+        let request = request.0;
         match CodeExecutor::execute_with_params_compat(
             &request.code,
             LanguageScript::Python,
@@ -149,7 +152,7 @@ impl CodeRunnerService {
     }
 }
 
-#[tool(tool_box)]
+#[tool_handler(router = Self::tool_router())]
 impl ServerHandler for CodeRunnerService {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {

@@ -2,6 +2,8 @@
 
 这是一个支持通过MCP（Model Context Protocol）协议执行JavaScript、TypeScript和Python代码的工具。
 
+项目仓库：<https://github.com/nuwax-ai/run_code_rmcp>
+
 ## 功能特点
 
 - 执行JavaScript代码（使用Deno运行时）
@@ -20,7 +22,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/run_code_rmcp.git
+git clone https://github.com/nuwax-ai/run_code_rmcp.git
 cd run_code_rmcp
 
 # 安装工具
@@ -120,7 +122,7 @@ bash examples/test_mcp.sh
 ```toml
 # Cargo.toml
 [dependencies]
-run_code_rmcp = { git = "https://github.com/yourusername/run_code_rmcp.git" }
+run_code_rmcp = { git = "https://github.com/nuwax-ai/run_code_rmcp.git" }
 ```
 
 然后在你的Rust代码中使用：

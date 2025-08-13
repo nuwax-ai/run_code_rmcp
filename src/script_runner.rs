@@ -125,7 +125,7 @@ mod tests {
         println!("服务器信息: {:?}", server_info);
         
         // 验证服务器信息
-        assert!(!server_info.instructions.is_none(), "服务器应该提供说明");
+        assert!(!server_info.unwrap().instructions.is_none(), "服务器应该提供说明");
         
         // 测试执行JavaScript代码
         let js_code = "function handler(input) { return {success: true, message: 'JavaScript测试成功'}; }";

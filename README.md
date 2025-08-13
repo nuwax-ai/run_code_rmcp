@@ -264,10 +264,10 @@ def main(args):
 
 ## 系统要求
 
-- Rust 1.70.0 或更高版本
+- Rust 1.85 或更高版本
 - 对于JavaScript/TypeScript执行：Deno
 - 对于Python执行：Python 3.8+
 
 ## 许可证
 
-MIT 
+本项目采用 Apache License 2.0 发布。详见根目录的 `LICENSE` 与 `NOTICE` 文件。

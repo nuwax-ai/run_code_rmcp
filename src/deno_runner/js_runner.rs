@@ -2,7 +2,6 @@
 use crate::deno_runner::common_runner::run_deno_script_with_params;
 use crate::model::{CodeScriptExecutionResult, LanguageScript, RunCode};
 use anyhow::Result;
-use serde_json;
 
 #[derive(Default)]
 pub struct JsRunner;

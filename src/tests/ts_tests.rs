@@ -23,13 +23,13 @@ mod ts_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -57,7 +57,7 @@ mod ts_tests {
             "b": 20,
             "name": "测试用户"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行TypeScript脚本...");
@@ -67,13 +67,13 @@ mod ts_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -122,7 +122,7 @@ mod ts_tests {
         info!("类型检查完成");
 
         if let Some(error) = &result.error {
-            info!("类型检查错误: {}", error);
+            info!("类型检查错误: {error}");
         } else {
             info!("类型检查通过");
         }
@@ -164,7 +164,7 @@ async function handler(input: any): Promise<{result: string}> {
         let params = json!({
             "test": "超时测试"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 设置2秒超时并执行脚本
         info!("开始执行TypeScript脚本，设置2秒超时...");
@@ -175,7 +175,7 @@ async function handler(input: any): Promise<{result: string}> {
         let elapsed = start_time.elapsed();
 
         // 检查是否在2-3秒内超时（给一点缓冲时间）
-        info!("脚本执行耗时: {:?}", elapsed);
+        info!("脚本执行耗时: {elapsed:?}");
         assert!(elapsed.as_secs() >= 2, "脚本应该至少运行2秒");
         assert!(elapsed.as_secs() < 4, "脚本应该在4秒内超时");
 
@@ -183,7 +183,7 @@ async function handler(input: any): Promise<{result: string}> {
         match result {
             Ok(exec_result) => {
                 if let Some(error) = exec_result.error {
-                    info!("正确捕获到超时错误: {}", error);
+                    info!("正确捕获到超时错误: {error}");
                     assert!(
                         error.contains("timed out") || 
                         error.contains("TimedOut") ||
@@ -196,8 +196,8 @@ async function handler(input: any): Promise<{result: string}> {
             }
             Err(e) => {
                 // 使用特殊格式化获取完整错误链
-                let full_error = format!("{:#}", e);
-                info!("捕获到错误: {}", full_error);
+                let full_error = format!("{e:#}");
+                info!("捕获到错误: {full_error}");
                 assert!(
                     full_error.contains("timed out"),
                     "完整错误链中应该包含'timed out'超时信息"

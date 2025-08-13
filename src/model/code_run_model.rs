@@ -76,8 +76,7 @@ impl CodeExecutor {
         timeout_seconds: Option<u64>,
     ) -> Result<CodeScriptExecutionResult> {
         info!(
-            "开始执行代码... 语言[{:?}],执行参数: {:?}",
-            language, params
+            "开始执行代码... 语言[{language:?}],执行参数: {params:?}"
         );
         match language {
             LanguageScript::Js => {
@@ -132,7 +131,7 @@ impl CodeExecutor {
                         .filter_map(|v| v.as_str().map(String::from))
                         .collect()
                 })
-                .unwrap_or_else(Vec::new);
+                .unwrap_or_default();
 
             // 处理结果，尝试解析JSON字符串
             let result = if parsed["result"].is_null() {
@@ -168,8 +167,7 @@ impl CodeExecutor {
             result: None,
             success: false,
             error: Some(format!(
-                "Failed to extract structured output: {}",
-                stderr_str
+                "Failed to extract structured output: {stderr_str}"
             )),
         })
     }

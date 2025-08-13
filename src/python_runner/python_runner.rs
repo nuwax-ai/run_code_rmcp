@@ -6,7 +6,6 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use log::{debug, error, info, warn};
-use serde_json;
 use tokio::process::Command;
 
 #[derive(Default)]
@@ -22,7 +21,7 @@ impl RunCode for PythonRunner {
         params: Option<serde_json::Value>,
         timeout_seconds: Option<u64>,
     ) -> Result<CodeScriptExecutionResult> {
-        debug!("开始执行Python脚本...,执行参数: {:?}", params);
+        debug!("开始执行Python脚本...,执行参数: {params:?}");
         // 根据 code ,获取对应的hash, 对用户脚本代码,使用胶水代码处理后,缓存到文件系统里,下次使用如果hash相同,直接使用
         let hash = CodeFileCache::obtain_code_hash(code);
         let cache_exist =
@@ -52,7 +51,7 @@ impl RunCode for PythonRunner {
 
             // 执行添加依赖命令
             if !dependencies.is_empty() {
-                info!("正在添加依赖: {:?}", dependencies);
+                info!("正在添加依赖: {dependencies:?}");
                 let mut cmd = Command::new("uv");
                 cmd.arg("add")
                     .arg("--script")
@@ -67,21 +66,21 @@ impl RunCode for PythonRunner {
 
                 // 打印 cmd 命令,可以直接复制执行的命令字符串
                 let cmd_str = format!("{:?}", &cmd);
-                info!("uv命令字符串: {}", cmd_str);
+                info!("uv命令字符串: {cmd_str}");
 
                 let cmd_output = match cmd.kill_on_drop(true).output().await {
                     Ok(output) => output,
                     Err(e) => {
-                        error!("安装Python依赖失败: {:?}", e);
-                        error!("失败的命令: {:?}", cmd);
+                        error!("安装Python依赖失败: {e:?}");
+                        error!("失败的命令: {cmd:?}");
                         return Err(e).context("Failed to add dependencies with uv");
                     }
                 };
 
                 let stdout = String::from_utf8_lossy(&cmd_output.stdout).to_string();
                 let stderr = String::from_utf8_lossy(&cmd_output.stderr).to_string();
-                info!("添加依赖结果 - stdout: {}", stdout);
-                info!("添加依赖结果 - stderr: {}", stderr);
+                info!("添加依赖结果 - stdout: {stdout}");
+                info!("添加依赖结果 - stderr: {stderr}");
 
                 if !cmd_output.status.success() {
                     warn!("添加依赖失败，状态码: {}", cmd_output.status);
@@ -132,20 +131,20 @@ impl RunCode for PythonRunner {
             Ok(cmd_result) => match cmd_result {
                 Ok(output) => output,
                 Err(e) => {
-                    error!("Python命令执行失败: {:?}", e);
+                    error!("Python命令执行失败: {e:?}");
                     return Err(e.into());
                 }
             },
             Err(e) => {
-                error!("Python任务执行异常: {:?}", e);
+                error!("Python任务执行异常: {e:?}");
                 return Err(e.into());
             }
         };
         // 调试输出
         let stdout = String::from_utf8_lossy(&output.stdout).to_string();
         let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-        debug!("Python stdout: {}", stdout);
-        debug!("Python stderr: {}", stderr);
+        debug!("Python stdout: {stdout}");
+        debug!("Python stderr: {stderr}");
 
         // 解析输出
         CodeExecutor::parse_execution_output(&output.stdout, &output.stderr).await

@@ -24,12 +24,12 @@ async fn install_python_3_13() -> Result<()> {
             Ok(())
         }
         Ok(Err(e)) => {
-            warn!("命令执行失败: {}", e);
-            return Err(anyhow::anyhow!("命令执行失败: {}", e));
+            warn!("命令执行失败: {e}");
+            Err(anyhow::anyhow!("命令执行失败: {}", e))
         }
         Err(e) => {
-            warn!("执行超时或系统错误: {}", e);
-            return Err(anyhow::anyhow!("执行超时或系统错误: {}", e));
+            warn!("执行超时或系统错误: {e}");
+            Err(anyhow::anyhow!("执行超时或系统错误: {}", e))
         }
     }
 }
@@ -58,11 +58,11 @@ async fn check_and_create_uv_venv() -> Result<()> {
             Ok(())
         }
         Ok(Err(e)) => {
-            warn!("命令执行失败: {}", e);
+            warn!("命令执行失败: {e}");
             Err(anyhow::anyhow!("命令执行失败: {}", e))
         }
         Err(e) => {
-            warn!("执行超时或系统错误: {}", e);
+            warn!("执行超时或系统错误: {e}");
             Err(anyhow::anyhow!("执行超时或系统错误: {}", e))
         }
     }
@@ -98,12 +98,12 @@ async fn warm_up_python_env(custom_deps: Option<Vec<String>>) -> Result<()> {
     };
 
     let total_deps = deps_to_install.len();
-    info!("总共需要预热 {} 个Python依赖", total_deps);
+    info!("总共需要预热 {total_deps} 个Python依赖");
 
     // 使用uv安装依赖
     for (index, dep) in deps_to_install.iter().enumerate() {
         let progress = ((index + 1) as f32 / total_deps as f32 * 100.0) as u32;
-        info!("预热进度: {}% - 正在安装Python依赖: {}", progress, dep);
+        info!("预热进度: {progress}% - 正在安装Python依赖: {dep}");
 
         let mut cmd = Command::new("uv");
         cmd.arg("pip")
@@ -116,15 +116,15 @@ async fn warm_up_python_env(custom_deps: Option<Vec<String>>) -> Result<()> {
         match CommandExecutor::with_timeout(cmd.status(), 600).await {
             Ok(Ok(status)) => {
                 if !status.success() {
-                    warn!("安装依赖 {} 失败", dep);
+                    warn!("安装依赖 {dep} 失败");
                 }
             }
             Ok(Err(e)) => {
-                warn!("命令执行失败: {} - 依赖: {}", e, dep);
+                warn!("命令执行失败: {e} - 依赖: {dep}");
                 continue;
             }
             Err(e) => {
-                warn!("执行超时或系统错误: {} - 依赖: {}", e, dep);
+                warn!("执行超时或系统错误: {e} - 依赖: {dep}");
                 continue;
             }
         }
@@ -208,7 +208,7 @@ async fn warm_up_js_env(
 
     // 计算总任务数
     let total_tasks = npm_packages.len() + jsr_packages.len() + node_modules.len();
-    info!("总共需要预热 {} 个JavaScript/TypeScript模块", total_tasks);
+    info!("总共需要预热 {total_tasks} 个JavaScript/TypeScript模块");
 
     let mut completed_tasks = 0;
 
@@ -216,24 +216,24 @@ async fn warm_up_js_env(
     for pkg in npm_packages.iter() {
         completed_tasks += 1;
         let progress = (completed_tasks as f32 / total_tasks as f32 * 100.0) as u32;
-        info!("预热进度: {}% - 正在缓存npm包: {}", progress, pkg);
+        info!("预热进度: {progress}% - 正在缓存npm包: {pkg}");
 
         let mut cmd = Command::new("deno");
-        cmd.args(["cache", "--reload", &format!("npm:{}", pkg)])
+        cmd.args(["cache", "--reload", &format!("npm:{pkg}")])
             .kill_on_drop(true);
 
         match CommandExecutor::with_timeout(cmd.status(), 600).await {
             Ok(Ok(status)) => {
                 if !status.success() {
-                    warn!("缓存npm包 {} 失败", pkg);
+                    warn!("缓存npm包 {pkg} 失败");
                 }
             }
             Ok(Err(e)) => {
-                warn!("命令执行失败: {} - 包: {}", e, pkg);
+                warn!("命令执行失败: {e} - 包: {pkg}");
                 continue;
             }
             Err(e) => {
-                warn!("执行超时或系统错误: {} - 包: {}", e, pkg);
+                warn!("执行超时或系统错误: {e} - 包: {pkg}");
                 continue;
             }
         }
@@ -243,24 +243,24 @@ async fn warm_up_js_env(
     for pkg in jsr_packages.iter() {
         completed_tasks += 1;
         let progress = (completed_tasks as f32 / total_tasks as f32 * 100.0) as u32;
-        info!("预热进度: {}% - 正在缓存JSR包: {}", progress, pkg);
+        info!("预热进度: {progress}% - 正在缓存JSR包: {pkg}");
 
         let mut cmd = Command::new("deno");
-        cmd.args(["cache", "--reload", &format!("jsr:{}", pkg)])
+        cmd.args(["cache", "--reload", &format!("jsr:{pkg}")])
             .kill_on_drop(true);
 
         match CommandExecutor::with_timeout(cmd.status(), 600).await {
             Ok(Ok(status)) => {
                 if !status.success() {
-                    warn!("缓存JSR包 {} 失败", pkg);
+                    warn!("缓存JSR包 {pkg} 失败");
                 }
             }
             Ok(Err(e)) => {
-                warn!("命令执行失败: {} - 包: {}", e, pkg);
+                warn!("命令执行失败: {e} - 包: {pkg}");
                 continue;
             }
             Err(e) => {
-                warn!("执行超时或系统错误: {} - 包: {}", e, pkg);
+                warn!("执行超时或系统错误: {e} - 包: {pkg}");
                 continue;
             }
         }
@@ -270,24 +270,24 @@ async fn warm_up_js_env(
     for module in node_modules.iter() {
         completed_tasks += 1;
         let progress = (completed_tasks as f32 / total_tasks as f32 * 100.0) as u32;
-        info!("预热进度: {}% - 正在缓存Node.js模块: {}", progress, module);
+        info!("预热进度: {progress}% - 正在缓存Node.js模块: {module}");
 
         let mut cmd = Command::new("deno");
-        cmd.args(["cache", "--reload", &format!("node:{}", module)])
+        cmd.args(["cache", "--reload", &format!("node:{module}")])
             .kill_on_drop(true);
 
         match CommandExecutor::with_timeout(cmd.status(), 600).await {
             Ok(Ok(status)) => {
                 if !status.success() {
-                    warn!("缓存Node.js模块 {} 失败", module);
+                    warn!("缓存Node.js模块 {module} 失败");
                 }
             }
             Ok(Err(e)) => {
-                warn!("命令执行失败: {} - 模块: {}", e, module);
+                warn!("命令执行失败: {e} - 模块: {module}");
                 continue;
             }
             Err(e) => {
-                warn!("执行超时或系统错误: {} - 包: {}", e, module);
+                warn!("执行超时或系统错误: {e} - 包: {module}");
                 continue;
             }
         }
@@ -308,17 +308,17 @@ pub async fn warm_up_all_envs(
 
     // 检查并创建 uv 虚拟环境
     if let Err(e) = check_and_create_uv_venv().await {
-        warn!("检查或创建 uv 虚拟环境失败: {}", e);
+        warn!("检查或创建 uv 虚拟环境失败: {e}");
     }
 
     // 安装Python 3.13
     if let Err(e) = install_python_3_13().await {
-        warn!("安装Python 3.13失败: {}", e);
+        warn!("安装Python 3.13失败: {e}");
     }
 
     // 预热Python环境
     if let Err(e) = warm_up_python_env(custom_python_deps).await {
-        warn!("预热Python环境失败: {}", e);
+        warn!("预热Python环境失败: {e}");
     }
 
     // 预热JavaScript/TypeScript环境
@@ -329,7 +329,7 @@ pub async fn warm_up_all_envs(
     )
     .await
     {
-        warn!("预热JavaScript/TypeScript环境失败: {}", e);
+        warn!("预热JavaScript/TypeScript环境失败: {e}");
     }
 
     info!("所有脚本执行环境预热完成");

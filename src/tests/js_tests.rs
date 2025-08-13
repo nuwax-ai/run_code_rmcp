@@ -23,13 +23,13 @@ mod js_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -57,7 +57,7 @@ mod js_tests {
             "b": 20,
             "name": "测试用户"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行JavaScript脚本...");
@@ -67,13 +67,13 @@ mod js_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -109,7 +109,7 @@ mod js_tests {
             "a": 1,
             "b": 2
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行JavaScript脚本...");
@@ -119,13 +119,13 @@ mod js_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -176,7 +176,7 @@ async function handler(input) {
         let params = json!({
             "test": "超时测试"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 设置2秒超时并执行脚本
         info!("开始执行JavaScript脚本，设置2秒超时...");
@@ -187,7 +187,7 @@ async function handler(input) {
         let elapsed = start_time.elapsed();
 
         // 检查是否在2-3秒内超时（给一点缓冲时间）
-        info!("脚本执行耗时: {:?}", elapsed);
+        info!("脚本执行耗时: {elapsed:?}");
         assert!(elapsed.as_secs() >= 2, "脚本应该至少运行2秒");
         assert!(elapsed.as_secs() < 4, "脚本应该在4秒内超时");
 
@@ -195,7 +195,7 @@ async function handler(input) {
         match result {
             Ok(exec_result) => {
                 if let Some(error) = exec_result.error {
-                    info!("正确捕获到超时错误: {}", error);
+                    info!("正确捕获到超时错误: {error}");
                     assert!(
                         error.contains("timed out") || 
                         error.contains("TimedOut") ||
@@ -208,8 +208,8 @@ async function handler(input) {
             }
             Err(e) => {
                 // 使用特殊格式化获取完整错误链
-                let full_error = format!("{:#}", e);
-                info!("捕获到错误: {}", full_error);
+                let full_error = format!("{e:#}");
+                info!("捕获到错误: {full_error}");
                 assert!(
                     full_error.contains("timed out"),
                     "完整错误链中应该包含'timed out'超时信息"
@@ -234,7 +234,7 @@ async function handler(input) {
             "a": 5,
             "b": 7
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行JavaScript脚本...");
@@ -244,13 +244,13 @@ async function handler(input) {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -290,7 +290,7 @@ async function handler(input) {
         let params = json!({
             "path": "test.txt"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行JavaScript脚本...");
@@ -300,13 +300,13 @@ async function handler(input) {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -346,7 +346,7 @@ async function handler(input) {
             "b": 5,
             "expected": 15
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行JavaScript脚本...");
@@ -356,13 +356,13 @@ async function handler(input) {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -402,7 +402,7 @@ async function handler(input) {
                 "taxRate": 0.05
             }
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行JavaScript脚本...");
@@ -412,13 +412,13 @@ async function handler(input) {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -452,7 +452,7 @@ async function handler(input) {
         let params = json!({
             "url": "https://jsonplaceholder.typicode.com/todos/1"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行JavaScript脚本...");
@@ -462,13 +462,13 @@ async function handler(input) {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -504,7 +504,7 @@ async function handler(input) {
             "data": "测试数据",
             "salt": "test-salt-123"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行JavaScript脚本...");
@@ -514,13 +514,13 @@ async function handler(input) {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -555,7 +555,7 @@ async function handler(input) {
             "data": [1, 2, 3, 4, 5, 6, 7, 8, 9],
             "chunkSize": 3
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行JavaScript脚本...");
@@ -565,13 +565,13 @@ async function handler(input) {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -613,7 +613,7 @@ async function handler(input) {
         let params = json!({
             "testKey": "测试值"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行JavaScript脚本...");
@@ -623,13 +623,13 @@ async function handler(input) {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }

@@ -81,33 +81,30 @@ async fn main() -> Result<()> {
     }
     builder.init();
 
-    match &cli.command {
-        Commands::ClearCache { language } => {
-            match language.to_lowercase().as_str() {
-                "js" => {
-                    CodeFileCache::clear_cache_by_language(&LanguageScript::Js).await?;
-                    info!("已清除 JavaScript 缓存");
-                }
-                "ts" => {
-                    CodeFileCache::clear_cache_by_language(&LanguageScript::Ts).await?;
-                    info!("已清除 TypeScript 缓存");
-                }
-                "python" => {
-                    CodeFileCache::clear_cache_by_language(&LanguageScript::Python).await?;
-                    info!("已清除 Python 缓存");
-                }
-                "all" => {
-                    CodeFileCache::clear_all_cache().await?;
-                    info!("已清除所有缓存");
-                }
-                _ => {
-                    info!("无效的语言类型，可选项: js, ts, python, all");
-                    return Ok(());
-                }
+    if let Commands::ClearCache { language } = &cli.command {
+        match language.to_lowercase().as_str() {
+            "js" => {
+                CodeFileCache::clear_cache_by_language(&LanguageScript::Js).await?;
+                info!("已清除 JavaScript 缓存");
             }
-            return Ok(());
+            "ts" => {
+                CodeFileCache::clear_cache_by_language(&LanguageScript::Ts).await?;
+                info!("已清除 TypeScript 缓存");
+            }
+            "python" => {
+                CodeFileCache::clear_cache_by_language(&LanguageScript::Python).await?;
+                info!("已清除 Python 缓存");
+            }
+            "all" => {
+                CodeFileCache::clear_all_cache().await?;
+                info!("已清除所有缓存");
+            }
+            _ => {
+                info!("无效的语言类型，可选项: js, ts, python, all");
+                return Ok(());
+            }
         }
-        _ => {}
+        return Ok(());
     }
 
     // 解析传递给脚本的参数
@@ -129,7 +126,7 @@ async fn main() -> Result<()> {
     // 如果指定了清除缓存选项，则清除对应语言的缓存
     if cli.clear_cache {
         CodeFileCache::clear_cache_by_language(&language).await?;
-        info!("已清除 {:?} 缓存", language);
+        info!("已清除 {language:?} 缓存");
     }
 
     // 执行代码
@@ -172,7 +169,7 @@ fn print_result(result: CodeScriptExecutionResult) {
     if !result.logs.is_empty() {
         info!("--- Logs ---");
         for log in result.logs {
-            info!("{}", log);
+            info!("{log}");
         }
         info!("------------");
     }
@@ -180,12 +177,12 @@ fn print_result(result: CodeScriptExecutionResult) {
     if let Some(result_val) = result.result {
         // 使用 serde_json 序列化结果，确保所有类型都能正确显示
         match serde_json::to_string_pretty(&result_val) {
-            Ok(json_str) => info!("Result: {}", json_str),
-            Err(_) => info!("Result: {}", result_val),
+            Ok(json_str) => info!("Result: {json_str}"),
+            Err(_) => info!("Result: {result_val}"),
         }
     }
 
     if let Some(error) = result.error {
-        error!("Error: {}", error);
+        error!("Error: {error}");
     }
 }

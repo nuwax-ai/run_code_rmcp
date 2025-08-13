@@ -207,9 +207,9 @@ fn parse_python_imports(python_code: &str) -> Result<Vec<String>> {
     let input = if python_code.ends_with('\n') {
         python_code.to_string()
     } else {
-        format!("{}\n", python_code)
+        format!("{python_code}\n")
     };
-    debug!("Processing input: {:?}", input);
+    debug!("Processing input: {input:?}");
 
     let pairs = ImportParser::parse(Rule::file, &input)
         .map_err(|e| anyhow::anyhow!("Failed to parse input: {}", e))?;
@@ -264,7 +264,7 @@ fn parse_python_imports(python_code: &str) -> Result<Vec<String>> {
         }
     }
 
-    debug!("Final result: {:?}", imported_modules);
+    debug!("Final result: {imported_modules:?}");
     Ok(imported_modules)
 }
 
@@ -297,10 +297,10 @@ mod tests {
         setup();
         let python_code = "
                 import pandas as pd\n";
-        info!("Testing with input: {:?}", python_code);
+        info!("Testing with input: {python_code:?}");
 
         let imported_modules = parse_import(python_code)?;
-        info!("Parsed modules: {:?}", imported_modules);
+        info!("Parsed modules: {imported_modules:?}");
 
         assert_eq!(imported_modules, vec!["pandas"]);
         Ok(())
@@ -311,10 +311,10 @@ mod tests {
         setup();
         let python_code = "
              numpy_alias = importlib.import_module('numpy')";
-        info!("Testing with input: {:?}", python_code);
+        info!("Testing with input: {python_code:?}");
 
         let imported_modules = parse_import(python_code)?;
-        info!("Parsed modules: {:?}", imported_modules);
+        info!("Parsed modules: {imported_modules:?}");
 
         assert_eq!(imported_modules, vec!["numpy"]);
         Ok(())
@@ -344,7 +344,7 @@ else:
 
  "#;
         let imported_modules = parse_import(python_code)?;
-        info!("Parsed modules: {:?}", imported_modules);
+        info!("Parsed modules: {imported_modules:?}");
         assert_eq!(imported_modules, vec!["requests", "bs4"]);
 
         Ok(())
@@ -399,7 +399,7 @@ def main(args: dict) -> dict:
 "#;
 
         let imported_modules = parse_import(python_code)?;
-        info!("Parsed modules: {:?}", imported_modules);
+        info!("Parsed modules: {imported_modules:?}");
         assert_eq!(imported_modules, vec!["pandas", "numpy"]);
         Ok(())
     }

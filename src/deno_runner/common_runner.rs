@@ -1,6 +1,6 @@
 use crate::cache::CodeFileCache;
 use crate::model::{CodeExecutor, CodeScriptExecutionResult, CommandExecutor, LanguageScript};
-use anyhow::{Context, Result};
+use anyhow::Result;
 use log::{debug, error, info};
 use serde_json::Value;
 use tokio::process::Command;
@@ -16,7 +16,7 @@ pub async fn run_deno_script_with_params<F>(
 where
     F: Fn(&str, bool) -> String,
 {
-    debug!("开始执行{:?}脚本...,执行参数: {:?}", lang, params);
+    debug!("开始执行{lang:?}脚本...,执行参数: {params:?}");
 
     let hash = CodeFileCache::obtain_code_hash(code);
     let cache_exist = CodeFileCache::check_code_file_cache_exisht(&hash, &lang).await;
@@ -65,12 +65,12 @@ where
         Ok(cmd_result) => match cmd_result {
             Ok(output) => output,
             Err(e) => {
-                error!("Deno命令执行失败 [{:?}]: {:?}", lang, e);
+                error!("Deno命令执行失败 [{lang:?}]: {e:?}");
                 return Err(e.into());
             }
         },
         Err(e) => {
-            error!("Deno任务执行异常 [{:?}]: {:?}", lang, e);
+            error!("Deno任务执行异常 [{lang:?}]: {e:?}");
             return Err(e.into());
         }
     };

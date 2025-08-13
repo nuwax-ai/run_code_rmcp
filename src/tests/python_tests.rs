@@ -23,7 +23,7 @@ mod python_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
@@ -60,7 +60,7 @@ mod python_tests {
             "a": 10,
             "b": 20
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行Python脚本...");
@@ -70,13 +70,13 @@ mod python_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -111,7 +111,7 @@ mod python_tests {
 
         // 测试字符串类型
         let params = json!({"type": "string"});
-        info!("测试字符串类型, 参数: {:?}", params);
+        info!("测试字符串类型, 参数: {params:?}");
         let result =
             CodeExecutor::execute_with_params_compat(&code, LanguageScript::Python, Some(params))
                 .await?;
@@ -121,7 +121,7 @@ mod python_tests {
 
         // 测试数字类型
         let params = json!({"type": "number"});
-        info!("测试数字类型, 参数: {:?}", params);
+        info!("测试数字类型, 参数: {params:?}");
         let result =
             CodeExecutor::execute_with_params_compat(&code, LanguageScript::Python, Some(params))
                 .await?;
@@ -132,18 +132,18 @@ mod python_tests {
 
         // 测试布尔类型
         let params = json!({"type": "boolean"});
-        info!("测试布尔类型, 参数: {:?}", params);
+        info!("测试布尔类型, 参数: {params:?}");
         let result =
             CodeExecutor::execute_with_params_compat(&code, LanguageScript::Python, Some(params))
                 .await?;
         if let Some(result_val) = &result.result {
             assert!(result_val.is_boolean(), "结果应为布尔类型");
-            assert_eq!(result_val.as_bool().unwrap(), true, "结果应为 true");
+            assert!(result_val.as_bool().unwrap(), "结果应为 true");
         }
 
         // 测试列表类型
         let params = json!({"type": "list"});
-        info!("测试列表类型, 参数: {:?}", params);
+        info!("测试列表类型, 参数: {params:?}");
         let result =
             CodeExecutor::execute_with_params_compat(&code, LanguageScript::Python, Some(params))
                 .await?;
@@ -159,7 +159,7 @@ mod python_tests {
 
         // 测试字典类型
         let params = json!({"type": "dict"});
-        info!("测试字典类型, 参数: {:?}", params);
+        info!("测试字典类型, 参数: {params:?}");
         let result =
             CodeExecutor::execute_with_params_compat(&code, LanguageScript::Python, Some(params))
                 .await?;
@@ -177,7 +177,7 @@ mod python_tests {
 
         // 测试 None 类型
         let params = json!({"type": "null"});
-        info!("测试 None 类型, 参数: {:?}", params);
+        info!("测试 None 类型, 参数: {params:?}");
         let _result =
             CodeExecutor::execute_with_params_compat(&code, LanguageScript::Python, Some(params))
                 .await?;
@@ -197,7 +197,7 @@ mod python_tests {
 
         // 检查依赖识别
         let dependencies = crate::python_runner::parse_import(&code)?;
-        info!("识别到的依赖: {:?}", dependencies);
+        info!("识别到的依赖: {dependencies:?}");
 
         // 验证依赖识别结果 - 应该包含pandas依赖
         assert!(!dependencies.is_empty(), "依赖列表不应为空");
@@ -212,7 +212,7 @@ mod python_tests {
                 "input": "测试数据"
             }
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行Python脚本...");
@@ -222,7 +222,7 @@ mod python_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
+            info!("执行错误: {error}");
             // 如果有执行错误，我们只验证依赖识别是否正确，不再检查执行结果
             // 这是因为pandas可能未安装或环境问题导致执行失败
             return Ok(());
@@ -231,7 +231,7 @@ mod python_tests {
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
         } else {
             info!("无执行结果");
         }
@@ -245,12 +245,12 @@ mod python_tests {
 
             // 逐条打印日志
             for (i, log) in result.logs.iter().enumerate() {
-                info!("日志[{}]: {}", i, log);
+                info!("日志[{i}]: {log}");
             }
 
             // 检查日志中是否包含logging.info的输出
             let logs_str = result.logs.join(" ");
-            info!("合并后的日志字符串: {}", logs_str);
+            info!("合并后的日志字符串: {logs_str}");
             assert!(
                 logs_str.contains("Created data structure"),
                 "日志应包含'Created data structure'"
@@ -298,7 +298,7 @@ mod python_tests {
         let params = json!({
             "input": "直接提供的参数"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行Python脚本...");
@@ -311,14 +311,14 @@ mod python_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
-            panic!("执行出错: {}", error);
+            info!("执行错误: {error}");
+            panic!("执行出错: {error}");
         } else {
             info!("脚本执行成功");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
 
             if let Some(result_str) = result_val.as_str() {
                 let json_val = serde_json::from_str::<serde_json::Value>(result_str)?;
@@ -351,7 +351,7 @@ mod python_tests {
                 "input": "嵌套提供的参数"
             }
         });
-        info!("准备嵌套测试参数: {:?}", nested_params);
+        info!("准备嵌套测试参数: {nested_params:?}");
 
         // 执行脚本
         info!("开始执行Python脚本...");
@@ -364,12 +364,12 @@ mod python_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
-            panic!("执行出错: {}", error);
+            info!("执行错误: {error}");
+            panic!("执行出错: {error}");
         }
 
         if let Some(result_val) = &result.result {
-            info!("执行结果: {:?}", result_val);
+            info!("执行结果: {result_val:?}");
 
             if let Some(result_str) = result_val.as_str() {
                 let json_val = serde_json::from_str::<serde_json::Value>(result_str)?;
@@ -404,7 +404,7 @@ mod python_tests {
         let params = json!({
             "test": "日志测试"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 执行脚本
         info!("开始执行Python脚本...");
@@ -414,8 +414,8 @@ mod python_tests {
         info!("脚本执行完成, 日志: {:?}", result.logs);
 
         if let Some(error) = &result.error {
-            info!("执行错误: {}", error);
-            panic!("执行出错: {}", error);
+            info!("执行错误: {error}");
+            panic!("执行出错: {error}");
         } else {
             info!("脚本执行成功");
         }
@@ -426,7 +426,7 @@ mod python_tests {
 
         // 逐条打印日志
         for (i, log) in result.logs.iter().enumerate() {
-            info!("日志[{}]: {}", i, log);
+            info!("日志[{i}]: {log}");
         }
 
         // 检查是否捕获了所有级别的日志
@@ -492,7 +492,7 @@ def main(args: dict) -> dict:
         let params = json!({
             "test": "超时测试"
         });
-        info!("准备测试参数: {:?}", params);
+        info!("准备测试参数: {params:?}");
 
         // 设置3秒超时并执行脚本
         info!("开始执行Python脚本，设置3秒超时...");
@@ -503,7 +503,7 @@ def main(args: dict) -> dict:
         let elapsed = start_time.elapsed();
 
         // 检查是否在3-4秒内超时（给一点缓冲时间）
-        info!("脚本执行耗时: {:?}", elapsed);
+        info!("脚本执行耗时: {elapsed:?}");
         assert!(elapsed.as_secs() >= 3, "脚本应该至少运行3秒");
         assert!(elapsed.as_secs() < 5, "脚本应该在5秒内超时");
 
@@ -511,7 +511,7 @@ def main(args: dict) -> dict:
         match result {
             Ok(exec_result) => {
                 if let Some(error) = exec_result.error {
-                    info!("正确捕获到超时错误: {}", error);
+                    info!("正确捕获到超时错误: {error}");
                     assert!(
                         error.contains("timed out") || 
                         error.contains("TimedOut") ||
@@ -524,8 +524,8 @@ def main(args: dict) -> dict:
             }
             Err(e) => {
                 // 使用特殊格式化获取完整错误链
-                let full_error = format!("{:#}", e);
-                info!("捕获到错误: {}", full_error);
+                let full_error = format!("{e:#}");
+                info!("捕获到错误: {full_error}");
                 assert!(
                     full_error.contains("timed out"),
                     "完整错误链中应该包含'timed out'超时信息"

@@ -30,7 +30,7 @@ pub mod test_utils {
 
         // 如果缓存目录存在，清理其中的文件
         if cache_dir.exists() {
-            info!("正在清理缓存目录: {:?}", cache_dir);
+            info!("正在清理缓存目录: {cache_dir:?}");
 
             match fs::read_dir(cache_dir) {
                 Ok(entries) => {
@@ -39,9 +39,9 @@ pub mod test_utils {
                             let path = entry.path();
                             if path.is_file() {
                                 if let Err(e) = fs::remove_file(&path) {
-                                    info!("删除文件失败 {:?}: {}", path, e);
+                                    info!("删除文件失败 {path:?}: {e}");
                                 } else {
-                                    info!("已删除缓存文件: {:?}", path);
+                                    info!("已删除缓存文件: {path:?}");
                                 }
                             }
                         }
@@ -49,14 +49,14 @@ pub mod test_utils {
                     info!("缓存目录清理完成");
                 }
                 Err(e) => {
-                    info!("读取缓存目录失败: {}", e);
+                    info!("读取缓存目录失败: {e}");
                 }
             }
         } else {
             // 如果缓存目录不存在，创建它
-            info!("缓存目录不存在，创建目录: {:?}", cache_dir);
+            info!("缓存目录不存在，创建目录: {cache_dir:?}");
             if let Err(e) = fs::create_dir_all(cache_dir) {
-                info!("创建缓存目录失败: {}", e);
+                info!("创建缓存目录失败: {e}");
             } else {
                 info!("缓存目录创建成功");
             }
@@ -65,7 +65,7 @@ pub mod test_utils {
         // 确保缓存目录存在且可写
         if !cache_dir.exists() {
             if let Err(e) = fs::create_dir_all(cache_dir) {
-                info!("创建缓存目录失败: {}", e);
+                info!("创建缓存目录失败: {e}");
             }
         }
 
@@ -74,7 +74,7 @@ pub mod test_utils {
         {
             use std::os::unix::fs::PermissionsExt;
             if let Err(e) = fs::set_permissions(cache_dir, fs::Permissions::from_mode(0o775)) {
-                info!("设置缓存目录权限失败: {}", e);
+                info!("设置缓存目录权限失败: {e}");
             } else {
                 info!("设置缓存目录权限成功");
             }

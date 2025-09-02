@@ -1,7 +1,7 @@
 use anyhow::Result;
 use rmcp::{
     ErrorData as McpError, ServerHandler,
-    handler::server::tool::Parameters,
+    handler::server::wrapper::Parameters,
     model::{
         CallToolResult, Content, Implementation, ProtocolVersion, ServerCapabilities, ServerInfo,
     },
@@ -152,7 +152,6 @@ impl CodeRunnerService {
     }
 }
 
-#[tool_handler(router = Self::tool_router())]
 impl ServerHandler for CodeRunnerService {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {

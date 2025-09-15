@@ -49,19 +49,29 @@ root_logger.addHandler(handler)
 args = {}
 has_input = False
 try:
-    input_json = os.environ.get('INPUT_JSON')
-    if input_json:
+    # 优先从临时文件读取参数
+    input_file = os.environ.get('INPUT_JSON_FILE')
+    if input_file:
+        with open(input_file, 'r', encoding='utf-8') as f:
+            input_json = f.read()
         args = json.loads(input_json)
         has_input = True
         print(f"接收到的参数: {args}")
-        
-        # 确保参数同时可以通过args直接访问，也可以通过args.get("params")访问
-        # 如果args中没有params键，但有其他键，则将整个args作为params的值
-        if "params" not in args and len(args) > 0:
-            args["params"] = args.copy()
-        # 如果params存在但为None，则初始化为空字典
-        elif args.get("params") is None:
-            args["params"] = {}
+    else:
+        # 兼容旧的环境变量方式
+        input_json = os.environ.get('INPUT_JSON')
+        if input_json:
+            args = json.loads(input_json)
+            has_input = True
+            print(f"接收到的参数: {args}")
+
+    # 确保参数同时可以通过args直接访问，也可以通过args.get("params")访问
+    # 如果args中没有params键，但有其他键，则将整个args作为params的值
+    if has_input and "params" not in args and len(args) > 0:
+        args["params"] = args.copy()
+    # 如果params存在但为None，则初始化为空字典
+    elif has_input and args.get("params") is None:
+        args["params"] = {}
 except Exception as e:
     print(f"解析输入参数失败: {e}")
 
@@ -77,6 +87,7 @@ try:
             if has_input:
                 result = handler(args)
             else:
+                # handler 函数不接受参数，无参数调用
                 result = handler()
             # 确保结果不为 None
             if result is None:

@@ -85,22 +85,14 @@ mod ts_tests {
 
         // 验证返回值包含预期的字段
         if let Some(result_val) = result.result {
-            if let Some(result_str) = result_val.as_str() {
-                // 如果结果是字符串格式的 JSON，尝试解析
-                if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(result_str) {
-                    assert!(json_val.get("sum").is_some(), "结果应包含 sum 字段");
-                    assert!(
-                        json_val.get("greeting").is_some(),
-                        "结果应包含 greeting 字段"
-                    );
-                    assert!(json_val.get("message").is_some(), "结果应包含 message 字段");
-                    assert!(json_val.get("numbers").is_some(), "结果应包含 numbers 字段");
-                } else {
-                    panic!("结果应为有效的 JSON 字符串");
-                }
-            } else {
-                panic!("结果应为字符串");
-            }
+            // 结果应该是JSON对象（TypeScript对象被正确解析）
+            assert!(result_val.get("sum").is_some(), "结果应包含 sum 字段");
+            assert!(
+                result_val.get("greeting").is_some(),
+                "结果应包含 greeting 字段"
+            );
+            assert!(result_val.get("message").is_some(), "结果应包含 message 字段");
+            assert!(result_val.get("numbers").is_some(), "结果应包含 numbers 字段");
         }
 
         Ok(())

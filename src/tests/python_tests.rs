@@ -83,18 +83,10 @@ mod python_tests {
 
         // 验证返回值包含预期的字段
         if let Some(result_val) = result.result {
-            if let Some(result_str) = result_val.as_str() {
-                // 如果结果是字符串格式的 JSON，尝试解析
-                if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(result_str) {
-                    assert!(json_val.get("sum").is_some(), "结果应包含 sum 字段");
-                    assert!(json_val.get("numbers").is_some(), "结果应包含 numbers 字段");
-                    assert!(json_val.get("message").is_some(), "结果应包含 message 字段");
-                } else {
-                    panic!("结果应为有效的 JSON 字符串");
-                }
-            } else {
-                panic!("结果应为字符串");
-            }
+            // 结果应该是 JSON 对象（Python 字典被正确解析）
+            assert!(result_val.get("sum").is_some(), "结果应包含 sum 字段");
+            assert!(result_val.get("numbers").is_some(), "结果应包含 numbers 字段");
+            assert!(result_val.get("message").is_some(), "结果应包含 message 字段");
         }
 
         Ok(())
@@ -148,13 +140,9 @@ mod python_tests {
             CodeExecutor::execute_with_params_compat(&code, LanguageScript::Python, Some(params))
                 .await?;
         if let Some(result_val) = &result.result {
-            if let Some(result_str) = result_val.as_str() {
-                let json_val = serde_json::from_str::<serde_json::Value>(result_str)?;
-                assert!(json_val.is_array(), "结果应为数组类型");
-                assert_eq!(json_val.as_array().unwrap().len(), 6, "数组长度应为 6");
-            } else {
-                panic!("结果应为字符串");
-            }
+            // 结果应该是数组类型（Python列表被正确解析）
+            assert!(result_val.is_array(), "结果应为数组类型");
+            assert_eq!(result_val.as_array().unwrap().len(), 6, "数组长度应为 6");
         }
 
         // 测试字典类型
@@ -164,15 +152,11 @@ mod python_tests {
             CodeExecutor::execute_with_params_compat(&code, LanguageScript::Python, Some(params))
                 .await?;
         if let Some(result_val) = &result.result {
-            if let Some(result_str) = result_val.as_str() {
-                let json_val = serde_json::from_str::<serde_json::Value>(result_str)?;
-                assert!(json_val.is_object(), "结果应为对象类型");
-                assert!(json_val.get("name").is_some(), "结果应包含 name 字段");
-                assert!(json_val.get("age").is_some(), "结果应包含 age 字段");
-                assert!(json_val.get("tags").is_some(), "结果应包含 tags 字段");
-            } else {
-                panic!("结果应为字符串");
-            }
+            // 结果应该是对象类型（Python字典被正确解析）
+            assert!(result_val.is_object(), "结果应为对象类型");
+            assert!(result_val.get("name").is_some(), "结果应包含 name 字段");
+            assert!(result_val.get("age").is_some(), "结果应包含 age 字段");
+            assert!(result_val.get("tags").is_some(), "结果应包含 tags 字段");
         }
 
         // 测试 None 类型
@@ -260,26 +244,18 @@ mod python_tests {
 
         // 如果有结果，验证返回值包含预期的字段
         if let Some(result_val) = result.result {
-            if let Some(result_str) = result_val.as_str() {
-                // 如果结果是字符串格式的 JSON，尝试解析
-                if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(result_str) {
-                    assert!(json_val.get("key0").is_some(), "结果应包含 key0 字段");
-                    assert_eq!(
-                        json_val["key0"].as_str().unwrap(),
-                        "测试数据",
-                        "key0 应等于输入参数"
-                    );
-                    assert!(json_val.get("key1").is_some(), "结果应包含 key1 字段");
-                    assert!(json_val["key1"].is_array(), "key1 应为数组");
-                    assert!(json_val.get("key2").is_some(), "结果应包含 key2 字段");
-                    assert!(json_val["key2"].is_object(), "key2 应为对象");
-                    assert!(json_val["key2"].get("key21").is_some(), "key2.key21 应存在");
-                } else {
-                    panic!("结果应为有效的 JSON 字符串");
-                }
-            } else {
-                panic!("结果应为字符串");
-            }
+            // 结果应该是JSON对象（Python字典被正确解析）
+            assert!(result_val.get("key0").is_some(), "结果应包含 key0 字段");
+            assert_eq!(
+                result_val["key0"].as_str().unwrap(),
+                "测试数据",
+                "key0 应等于输入参数"
+            );
+            assert!(result_val.get("key1").is_some(), "结果应包含 key1 字段");
+            assert!(result_val["key1"].is_array(), "key1 应为数组");
+            assert!(result_val.get("key2").is_some(), "结果应包含 key2 字段");
+            assert!(result_val["key2"].is_object(), "key2 应为对象");
+            assert!(result_val["key2"].get("key21").is_some(), "key2.key21 应存在");
         }
 
         Ok(())
@@ -447,16 +423,12 @@ mod python_tests {
 
         // 验证返回值
         if let Some(result_val) = result.result {
-            if let Some(result_str) = result_val.as_str() {
-                let json_val = serde_json::from_str::<serde_json::Value>(result_str)?;
-                assert_eq!(
-                    json_val["message"], "日志测试完成",
-                    "返回的message字段不正确"
-                );
-                assert_eq!(json_val["log_count"], 6, "返回的log_count字段不正确");
-            } else {
-                panic!("结果应为字符串");
-            }
+            // 结果应该是JSON对象（Python字典被正确解析）
+            assert_eq!(
+                result_val["message"], "日志测试完成",
+                "返回的message字段不正确"
+            );
+            assert_eq!(result_val["log_count"], 6, "返回的log_count字段不正确");
         } else {
             panic!("应有返回结果");
         }

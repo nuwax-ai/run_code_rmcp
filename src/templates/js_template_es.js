@@ -21,16 +21,27 @@ console.log = function() {
     }
 };
 
-// 从环境变量获取输入参数
-let input = {};
-try {
-    const inputJson = Deno.env.get("INPUT_JSON");
-    if (inputJson) {
-        input = JSON.parse(inputJson);
-        console.log("接收到的参数:", JSON.stringify(input));
+// 异步读取输入参数的函数
+async function readInputParams() {
+    let input = {};
+    try {
+        const inputFile = Deno.env.get("INPUT_JSON_FILE");
+        if (inputFile) {
+            const inputJson = await Deno.readTextFile(inputFile);
+            input = JSON.parse(inputJson);
+            console.log("接收到的参数:", JSON.stringify(input));
+        } else {
+            // 兼容旧的环境变量方式
+            const inputJson = Deno.env.get("INPUT_JSON");
+            if (inputJson) {
+                input = JSON.parse(inputJson);
+                console.log("接收到的参数:", JSON.stringify(input));
+            }
+        }
+    } catch (error) {
+        console.error("解析输入参数失败:", error);
     }
-} catch (error) {
-    console.error("解析输入参数失败:", error);
+    return input;
 }
 
 // 用户代码
@@ -41,6 +52,9 @@ let result = null;
 
 // 异步立即执行函数
 (async () => {
+    // 读取输入参数
+    const input = await readInputParams();
+
     try {
         // 优先检查main函数
         if (typeof main === 'function') {

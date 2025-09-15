@@ -13,7 +13,10 @@ pub mod test_utils {
 
     pub fn setup() {
         INIT.call_once(|| {
-            env_logger::builder().filter_level(LevelFilter::Info).init();
+            // 尝试初始化日志，如果失败则忽略
+            let _ = std::panic::catch_unwind(|| {
+                env_logger::builder().filter_level(LevelFilter::Info).init();
+            });
         });
 
         // 只有当环境变量设置为"1"时才清理缓存

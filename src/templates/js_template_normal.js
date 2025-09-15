@@ -21,20 +21,34 @@ console.log = function() {
     }
 };
 
-// 从环境变量获取输入参数
-let input = {};
-try {
-    const inputJson = Deno.env.get("INPUT_JSON");
-    if (inputJson) {
-        input = JSON.parse(inputJson);
-        console.log("接收到的参数:", JSON.stringify(input));
+// 异步读取输入参数的函数
+async function readInputParams() {
+    let input = {};
+    try {
+        const inputFile = Deno.env.get("INPUT_JSON_FILE");
+        if (inputFile) {
+            const inputJson = await Deno.readTextFile(inputFile);
+            input = JSON.parse(inputJson);
+            console.log("接收到的参数:", JSON.stringify(input));
+        } else {
+            // 兼容旧的环境变量方式
+            const inputJson = Deno.env.get("INPUT_JSON");
+            if (inputJson) {
+                input = JSON.parse(inputJson);
+                console.log("接收到的参数:", JSON.stringify(input));
+            }
+        }
+    } catch (error) {
+        console.error("解析输入参数失败:", error);
     }
-} catch (error) {
-    console.error("解析输入参数失败:", error);
+    return input;
 }
 
 // 异步立即执行函数
 (async () => {
+    // 读取输入参数
+    const input = await readInputParams();
+
     try {
         // 用户代码开始
         {{USER_CODE}}
@@ -42,7 +56,7 @@ try {
 
         // 执行函数并获取结果
         let result = null;
-        
+
         // 优先检查main函数
         if (typeof main === 'function') {
             // 检查main是否是异步函数

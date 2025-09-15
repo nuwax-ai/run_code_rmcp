@@ -6,6 +6,11 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use log::{debug, error, info, warn};
+use std::io::Write;
+use std::path::PathBuf;
+use tempfile::NamedTempFile;
+use tokio::fs;
+use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
 
 #[derive(Default)]
@@ -92,12 +97,6 @@ impl RunCode for PythonRunner {
 
         let temp_path = run_code_script_file_tuple.1;
 
-        // 将参数序列化为JSON字符串
-        let params_json = match params {
-            Some(p) => serde_json::to_string(&p)?,
-            None => "{}".to_string(),
-        };
-
         // 使用uv run命令执行Python脚本，提供隔离环境
         let mut execute_command = Command::new("uv");
         //还需要指定国内镜像地址,参考示例: uv run -s -p 3.13 d5ebe48b7d9da8cb835af6ef77b212921f9a44881fb232837b4dcc6ebecf9401.py --default-index https://mirrors.aliyun.com/pypi/simple
@@ -108,9 +107,34 @@ impl RunCode for PythonRunner {
             // .arg("3.13") // 指定Python解释器版本3.13
             .arg("--default-index")
             .arg(PYTHON_ACCELERATION_ADDRESS)
-            .env("INPUT_JSON", &params_json) // 通过环境变量传递参数
             .arg(&temp_path)
             .kill_on_drop(true);
+
+        // 处理参数：统一使用临时文件传递
+        let temp_input_path = if let Some(params) = params {
+            let params_json = serde_json::to_string(&params)?;
+
+            // 创建临时文件写入参数
+            let temp_dir = tempfile::TempDir::new()?;
+            let temp_file_path = temp_dir.path().join("input_params.json");
+
+            // 写入参数到临时文件
+            std::fs::write(&temp_file_path, params_json.as_bytes())?;
+
+            // 保持TempDir存在（这样文件就不会被删除）
+            let temp_dir_path = temp_dir.path().to_path_buf();
+            std::mem::forget(temp_dir);
+
+            // 设置环境变量指向临时文件
+            execute_command.env("INPUT_JSON_FILE", &temp_file_path);
+            debug!("使用临时文件传递参数，文件路径: {:?}", temp_file_path);
+
+            Some(temp_file_path)
+        } else {
+            // 没有参数时设置空对象
+            execute_command.env("INPUT_JSON", "{}");
+            None
+        };
 
         info!("执行命令: {:?}", &execute_command);
 
@@ -145,6 +169,17 @@ impl RunCode for PythonRunner {
         let stderr = String::from_utf8_lossy(&output.stderr).to_string();
         debug!("Python stdout: {stdout}");
         debug!("Python stderr: {stderr}");
+
+        // 执行完成后删除临时文件和目录
+        if let Some(temp_file_path) = temp_input_path {
+            // 删除文件
+            let _ = fs::remove_file(&temp_file_path).await;
+            // 尝试删除父目录（如果为空）
+            if let Some(parent) = temp_file_path.parent() {
+                let _ = fs::remove_dir(parent).await;
+            }
+            debug!("已删除临时文件: {:?}", temp_file_path);
+        }
 
         // 解析输出
         CodeExecutor::parse_execution_output(&output.stdout, &output.stderr).await

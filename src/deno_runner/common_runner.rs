@@ -3,6 +3,11 @@ use crate::model::{CodeExecutor, CodeScriptExecutionResult, CommandExecutor, Lan
 use anyhow::Result;
 use log::{debug, error, info};
 use serde_json::Value;
+use std::io::Write;
+use std::path::PathBuf;
+use tempfile::NamedTempFile;
+use tokio::fs;
+use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
 
 /// 通用的 Deno 脚本执行逻辑，供 JS/TS Runner 复用
@@ -35,11 +40,6 @@ where
 
     let temp_path = run_code_script_file_tuple.1;
 
-    let params_json = match params {
-        Some(p) => serde_json::to_string(&p)?,
-        None => "{}".to_string(),
-    };
-
     let mut execute_command = Command::new("deno");
     execute_command
         .arg("run")
@@ -48,9 +48,34 @@ where
         .arg("--allow-read")
         .arg("--no-check")
         .arg("--v8-flags=--max-heap-size=512")
-        .env("INPUT_JSON", &params_json)
         .arg(&temp_path)
         .kill_on_drop(true);
+
+    // 处理参数：统一使用临时文件传递
+    let temp_input_path = if let Some(params) = params {
+        let params_json = serde_json::to_string(&params)?;
+
+        // 创建临时文件写入参数
+        let temp_dir = tempfile::TempDir::new()?;
+        let temp_file_path = temp_dir.path().join("input_params.json");
+
+        // 写入参数到临时文件
+        std::fs::write(&temp_file_path, params_json.as_bytes())?;
+
+        // 保持TempDir存在（这样文件就不会被删除）
+        let temp_dir_path = temp_dir.path().to_path_buf();
+        std::mem::forget(temp_dir);
+
+        // 设置环境变量指向临时文件
+        execute_command.env("INPUT_JSON_FILE", &temp_file_path);
+        debug!("使用临时文件传递参数，文件路径: {:?}", temp_file_path);
+
+        Some(temp_file_path)
+    } else {
+        // 没有参数时设置空对象
+        execute_command.env("INPUT_JSON", "{}");
+        None
+    };
 
     debug!("Deno命令[{:?}]: {:?}", lang, &execute_command);
 
@@ -76,6 +101,17 @@ where
     };
     debug!("标准输出:\n{}", String::from_utf8_lossy(&output.stdout));
     debug!("错误输出:\n{}", String::from_utf8_lossy(&output.stderr));
+
+      // 执行完成后删除临时文件和目录
+    if let Some(temp_file_path) = temp_input_path {
+        // 删除文件
+        let _ = fs::remove_file(&temp_file_path).await;
+        // 尝试删除父目录（如果为空）
+        if let Some(parent) = temp_file_path.parent() {
+            let _ = fs::remove_dir(parent).await;
+        }
+        debug!("已删除临时文件: {:?}", temp_file_path);
+    }
 
     CodeExecutor::parse_execution_output(&output.stdout, &output.stderr).await
 }

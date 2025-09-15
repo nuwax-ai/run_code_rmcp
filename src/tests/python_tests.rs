@@ -507,4 +507,85 @@ def main(args: dict) -> dict:
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn test_python_large_parameters() -> Result<()> {
+        // 初始化日志
+        setup();
+
+        // 从 fixtures 目录读取测试脚本
+        let code = std::fs::read_to_string("fixtures/test_python_large_params.py")?;
+        info!("读取测试脚本: test_python_large_params.py");
+
+        // 生成大于2MB的文本参数
+        fn generate_large_text(size_in_mb: usize) -> String {
+            let chunk = "This is a test chunk of text designed to generate large parameters for Python testing. ".repeat(100);
+            let iterations = (size_in_mb * 1024 * 1024) / chunk.len();
+
+            let mut result = String::new();
+            for i in 0..iterations {
+                result.push_str(&chunk);
+                result.push_str(&format!("Iteration {}\n", i));
+            }
+
+            result
+        }
+
+        let large_text = generate_large_text(3); // 3MB
+        info!("生成了3MB大小的文本参数，实际大小: {:.2} MB", large_text.len() as f64 / 1024.0 / 1024.0);
+
+        // 准备参数
+        let params = json!({
+            "largeText": large_text
+        });
+        info!("准备测试参数，JSON大小: {:.2} MB", serde_json::to_string(&params).unwrap().len() as f64 / 1024.0 / 1024.0);
+
+        // 执行脚本
+        info!("开始执行Python脚本，测试大参数处理...");
+        let result =
+            CodeExecutor::execute_with_params_compat(&code, LanguageScript::Python, Some(params))
+                .await?;
+        info!("脚本执行完成, 日志: {:?}", result.logs);
+
+        if let Some(error) = &result.error {
+            info!("执行错误: {error}");
+        } else {
+            info!("脚本执行成功");
+        }
+
+        if let Some(result_val) = &result.result {
+            info!("执行结果: {result_val:?}");
+        } else {
+            info!("无执行结果");
+        }
+
+        // 验证结果
+        assert!(!result.logs.is_empty(), "日志不应为空");
+        assert!(result.error.is_none(), "不应有错误，这表明大参数处理成功");
+        assert!(result.result.is_some(), "应有返回结果");
+
+        // 验证返回值包含成功处理大参数的信息
+        if let Some(result_val) = result.result {
+            let json_str = serde_json::to_string(&result_val)?;
+            assert!(json_str.contains("success"), "结果应包含 success 字段");
+            assert!(json_str.contains("true"), "success 应为 true");
+            assert!(json_str.contains("Successfully processed large text parameter"), "结果应包含成功消息");
+            assert!(json_str.contains("sizeMB"), "结果应包含 sizeMB 字段");
+
+            // 验证返回值是对象格式
+            if let Some(obj) = result_val.as_object() {
+                if let Some(success) = obj.get("success") {
+                    assert_eq!(success, true, "success 字段的值应为 true");
+                }
+                if let Some(text_size) = obj.get("textSize") {
+                    assert!(text_size.is_number(), "textSize 应为数字");
+                    let size = text_size.as_u64().unwrap();
+                    assert!(size > 2 * 1024 * 1024, "文本大小应大于2MB");
+                }
+            }
+        }
+
+        info!("Python大参数测试通过！临时文件解决方案有效。");
+        Ok(())
+    }
 }

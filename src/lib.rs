@@ -1,6 +1,7 @@
 mod app_error;
 mod cache;
 mod deno_runner;
+#[cfg(feature = "mcp")]
 mod mcp;
 mod model;
 mod python_runner;
@@ -10,6 +11,7 @@ mod warm_up;
 
 pub use cache::*;
 pub use deno_runner::*;
+#[cfg(feature = "mcp")]
 pub use mcp::CodeRunRequest;
 pub use model::RunCodeHttpResult;
 pub use model::{CodeExecutor, CodeScriptExecutionResult, LanguageScript};

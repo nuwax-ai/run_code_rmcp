@@ -7,6 +7,7 @@ use std::{fs, path::PathBuf};
 mod app_error;
 mod cache;
 mod deno_runner;
+#[cfg(feature = "mcp")]
 mod mcp;
 mod model;
 mod python_runner;
@@ -26,6 +27,7 @@ struct Cli {
     show_logs: bool,
 
     /// Use MCP SDK integration
+    #[cfg(feature = "mcp")]
     #[arg(short, long)]
     use_mcp: bool,
 
@@ -130,6 +132,7 @@ async fn main() -> Result<()> {
     }
 
     // 执行代码
+    #[cfg(feature = "mcp")]
     let result = if cli.use_mcp {
         // 使用MCP SDK集成
         CodeExecutor::execute_with_params_compat(&code, language, params).await?
@@ -137,6 +140,9 @@ async fn main() -> Result<()> {
         // 直接执行
         CodeExecutor::execute_with_params_compat(&code, language, params).await?
     };
+
+    #[cfg(not(feature = "mcp"))]
+    let result = CodeExecutor::execute_with_params_compat(&code, language, params).await?;
 
     // 打印结果
     print_result(result);

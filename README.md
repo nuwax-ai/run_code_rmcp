@@ -1,273 +1,335 @@
-# MCP 代码执行工具
+# MCP Code Execution Tool
 
-这是一个支持通过MCP（Model Context Protocol）协议执行JavaScript、TypeScript和Python代码的工具。
+A Rust-based tool that provides both a command-line interface and an MCP (Model Context Protocol) server for executing JavaScript, TypeScript, and Python code in isolated environments.
 
-项目仓库：<https://github.com/nuwax-ai/run_code_rmcp>
+**Repository:** <https://github.com/nuwax-ai/run_code_rmcp>
 
-## 功能特点
+English | [中文](./README_zh.md)
 
-- 执行JavaScript代码（使用Deno运行时）
-- 执行TypeScript代码（使用Deno运行时）
-- 执行Python代码（使用uv提供隔离环境）
-- 捕获并区分脚本中的日志输出和执行结果
-- 支持JavaScript/TypeScript的handler函数和Python的handler/main函数作为执行结果的返回点
-- 通过环境变量传递参数给脚本
-- 可以通过参数控制是否显示日志输出
-- 支持MCP SDK集成
-- 提供命令行工具和Rust库两种使用方式
+## Features
 
-## 安装方法
+- Execute JavaScript, TypeScript, and Python code in isolated environments
+- **JavaScript/TypeScript**: Powered by Deno runtime
+- **Python**: Powered by `uv` with automatic dependency management
+- Automatic code caching using blake3 hashing for faster repeated executions
+- Support for ESM and CommonJS modules in JavaScript
+- Automatic Python dependency parsing and installation
+- Separate log capture and execution result handling
+- Available as both CLI tool (`run_code_rmcp`) and MCP server (`script_runner`)
 
-### 从源码安装
+## Installation
+
+### Install CLI Tool
 
 ```bash
-# 克隆仓库
+# Clone the repository
 git clone https://github.com/nuwax-ai/run_code_rmcp.git
 cd run_code_rmcp
 
-# 安装工具
-cargo install --path . --bin script_runner
+# Install the CLI tool (run_code_rmcp)
+cargo install --path .
+
+# Or install both CLI tool and MCP server
+cargo install --path . --features mcp
+cargo install --path . --bin script_runner --features mcp
 ```
 
-安装完成后，`script_runner` 命令将可用于系统中。
+### System Requirements
 
-## 使用方法
+- **Rust**: 1.85 or higher (for building)
+- **Deno**: Required for JavaScript/TypeScript execution
+- **uv**: Required for Python execution and dependency management
 
-### 直接使用cargo run执行代码
+Install Deno:
+```bash
+curl -fsSL https://deno.land/install.sh | sh
+```
+
+Install uv:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+## Usage
+
+### CLI Tool: run_code_rmcp
+
+The `run_code_rmcp` command allows you to execute code directly from the command line.
+
+#### Basic Syntax
 
 ```bash
-# 执行JavaScript文件
-cargo run -- --show-logs js -f fixtures/test_js.js
-
-# 执行带参数的JavaScript文件
-cargo run -- --show-logs js -f fixtures/test_js_params.js -p '{"name":"User"}'
-
-# 执行TypeScript文件
-cargo run -- --show-logs ts -f fixtures/test_ts.ts
-
-# 执行带参数的TypeScript文件
-cargo run -- --show-logs ts -f fixtures/test_ts_params.ts -p '{"a":10, "b":20, "name":"User"}'
-
-# 执行Python文件
-cargo run -- --show-logs python -f fixtures/test_python.py
-
-# 带参数执行Python文件
-cargo run -- --show-logs python -f fixtures/test_python_params.py -p '{"a":10, "b":20}'
-
-# 执行不同类型的Python示例
-cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"string"}'
-cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"number"}'
-cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"list"}'
-cargo run -- --show-logs python -f fixtures/test_python_types.py -p '{"type":"dict"}'
-
-# 执行带pandas的Python函数测试
-cargo run -- --show-logs python -f fixtures/rfunction_test2.py -p '{"params": {"input": "test_value"}}'
-
-# 使用MCP SDK执行带pandas的Python函数测试
-cargo run -- --use-mcp --show-logs python -f fixtures/rfunction_test2.py -p '{"params": {"input": "test_value"}}'
-
-# 直接执行JavaScript代码
-cargo run -- js -c "function handler(input) { return 'Hello from JS: ' + input.name; }" -p '{"name":"User"}'
-
-# 直接执行Python代码
-cargo run -- python -c "def handler(args): return 'Hello from Python: ' + args.get('name', 'Guest')" -p '{"name":"User"}'
+run_code_rmcp [OPTIONS] <COMMAND>
 ```
 
-### 作为命令行工具使用
+**Options:**
+- `--show-logs`: Display execution logs
+- `--clear-cache`: Clear cache before execution
+- `--use-mcp`: Use MCP SDK integration (requires mcp feature)
 
-`script_runner` 是一个基于标准输入/输出的MCP服务器，可以通过以下方式启动：
+**Commands:**
+- `js`: Execute JavaScript code
+- `ts`: Execute TypeScript code
+- `python`: Execute Python code
+- `clear-cache`: Clear cached files
+
+#### Execute JavaScript/TypeScript
 
 ```bash
-# 启动MCP服务器
-script_runner
+# Execute a JavaScript file
+run_code_rmcp --show-logs js -f fixtures/test_js.js
 
-# 启用详细日志输出
-script_runner --verbose
+# Execute with parameters
+run_code_rmcp --show-logs js -f fixtures/test_js_params.js -p '{"name":"User"}'
+
+# Execute TypeScript
+run_code_rmcp --show-logs ts -f fixtures/test_ts.ts
+
+# Execute inline code
+run_code_rmcp js -c "function handler() { return 'Hello!'; }"
 ```
 
-启动后，`script_runner` 将监听标准输入，等待MCP协议格式的JSON请求，并通过标准输出返回响应。
-
-### 与MCP客户端交互
-
-`script_runner` 是一个MCP服务器，可以与任何支持MCP协议的客户端交互。例如，可以使用官方的MCP Inspector工具进行交互：
+#### Execute Python
 
 ```bash
-# 安装MCP Inspector
-npm install -g @modelcontextprotocol/inspector
+# Execute a Python file
+run_code_rmcp --show-logs python -f fixtures/test_python.py
 
-# 使用MCP Inspector连接到script_runner
-npx @modelcontextprotocol/inspector script_runner
+# Execute with parameters
+run_code_rmcp --show-logs python -f fixtures/test_python_params.py -p '{"a":10, "b":20}'
+
+# Execute inline code
+run_code_rmcp python -c "def handler(): return 'Hello from Python!'"
 ```
 
-### 使用示例脚本
+#### Cache Management
 
-项目提供了两个示例脚本，用于测试与`script_runner`的交互：
-
-1. Node.js客户端示例 (`examples/mcp_client.js`)：
 ```bash
-# 运行Node.js客户端示例
-node examples/mcp_client.js
+# Clear all cache
+run_code_rmcp clear-cache --language all
+
+# Clear specific language cache
+run_code_rmcp clear-cache --language python
+run_code_rmcp clear-cache --language js
+run_code_rmcp clear-cache --language ts
+
+# Clear cache before execution
+run_code_rmcp --clear-cache js -f fixtures/test_js.js
 ```
 
-2. Bash脚本示例 (`examples/test_mcp.sh`)：
-```bash
-# 运行Bash脚本示例
-bash examples/test_mcp.sh
-```
-
-### 作为Rust库引用
-
-本项目不仅提供命令行工具，还可以作为库被其他Rust项目引用。在你的Rust项目中添加依赖：
+### Using as a Rust Library
 
 ```toml
-# Cargo.toml
 [dependencies]
 run_code_rmcp = { git = "https://github.com/nuwax-ai/run_code_rmcp.git" }
 ```
 
-然后在你的Rust代码中使用：
-
 ```rust
-use run_code_rmcp::execute_javascript;
-use run_code_rmcp::execute_typescript;
-use run_code_rmcp::execute_python;
+use run_code_rmcp::{CodeExecutor, LanguageScript};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // 执行JavaScript代码
-    let js_result = execute_javascript("console.log('Hello'); return 42;")?;
-    println!("JavaScript执行结果: {}", js_result);
-    
-    // 执行TypeScript代码
-    let ts_result = execute_typescript("const x: number = 10; return x * 2;")?;
-    println!("TypeScript执行结果: {}", ts_result);
-    
-    // 执行Python代码
-    let py_result = execute_python("import math; result = math.sqrt(16); result")?;
-    println!("Python执行结果: {}", py_result);
-    
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Execute JavaScript
+    let js_result = CodeExecutor::execute_with_params_compat(
+        "function handler() { return {success: true}; }",
+        LanguageScript::Js,
+        None
+    ).await?;
+
+    // Execute Python
+    let py_result = CodeExecutor::execute_with_params_compat(
+        "def handler(): return {'success': True}",
+        LanguageScript::Python,
+        None
+    ).await?;
+
     Ok(())
 }
 ```
 
-## 可用工具
+### MCP Server: script_runner
 
-通过MCP协议，可以使用以下工具：
+The `script_runner` is an MCP server that provides tools for AI assistants.
 
-1. `run_javascript` - 执行JavaScript代码
-   - 参数：
-     - `code`: 要执行的JavaScript代码
-     - `params`: 可选的执行参数
+#### Starting the Server
 
-2. `run_typescript` - 执行TypeScript代码
-   - 参数：
-     - `code`: 要执行的TypeScript代码
-     - `params`: 可选的执行参数
+```bash
+# Start MCP server
+script_runner
 
-3. `run_python` - 执行Python代码
-   - 参数：
-     - `code`: 要执行的Python代码
-     - `params`: 可选的执行参数
+# Start with verbose logging
+script_runner --verbose
+```
 
-## 示例
+The server communicates via stdio and waits for MCP protocol JSON requests.
 
-### 执行JavaScript代码
+#### Available Tools
+
+The MCP server provides the following tools:
+
+1. **run_javascript** - Execute JavaScript code
+2. **run_typescript** - Execute TypeScript code
+3. **run_python** - Execute Python code
+
+Each tool accepts:
+- `code` (string): The code to execute
+- `params` (object, optional): Parameters to pass to the handler function
+
+#### Integration with AI Assistants
+
+Add to your MCP client configuration (e.g., Claude Desktop):
 
 ```json
 {
-  "name": "run_javascript",
-  "arguments": {
-    "code": "console.log('Hello, World!'); return 42;"
-  }
+  "name": "script-runner",
+  "command": "script_runner",
+  "transport": "stdio"
 }
 ```
 
-### 执行TypeScript代码
+## Code Structure
 
-```json
-{
-  "name": "run_typescript",
-  "arguments": {
-    "code": "const greeting: string = 'Hello, TypeScript!'; console.log(greeting); return { message: greeting };"
-  }
-}
-```
+### Handler Functions
 
-### 执行Python代码
+Your scripts should define a handler function that returns the result.
 
-```json
-{
-  "name": "run_python",
-  "arguments": {
-    "code": "print('Hello from Python!'); import math; result = math.sqrt(16); print(f'Square root of 16 is {result}'); result"
-  }
-}
-```
+#### JavaScript/TypeScript
 
-## 代码结构
-
-每个脚本都应该有一个`handler`函数（对于JS/TS）或`handler`/`main`函数（对于Python）来返回最终结果：
-
-### JavaScript示例
+Supports both `main` and `handler` functions (main takes priority):
 
 ```javascript
-// 一些处理代码
-console.log("Processing...");
+// This function takes priority
+function main(input) {
+    console.log("Processing with main:", input);
+    return { result: "Hello from main!" };
+}
 
-// 处理函数，将被调用以获取结果
+// This function is used if main is not defined
 function handler(input) {
-    // 输入包含通过-p/--params传递的参数
-    console.log("Received input:", input);
-    
-    // 返回最终结果
-    return "Hello from JavaScript! Input: " + JSON.stringify(input);
+    console.log("Processing with handler:", input);
+    return { result: "Hello from handler!" };
 }
 ```
 
-### TypeScript示例
+ESM modules are also supported:
 
-```typescript
-// 一些处理代码
-console.log("Processing...");
+```javascript
+import { serve } from "https://deno.land/std/http/server.ts";
 
-// 处理函数，将被调用以获取结果
-function handler(input: any): string {
-    // 输入包含通过-p/--params传递的参数
-    console.log("Received input:", input);
-    
-    // 返回最终结果
-    return `Hello from TypeScript! Input: ${JSON.stringify(input)}`;
+function handler(input) {
+    return { message: "ESM works!" };
 }
 ```
 
-### Python示例
+#### Python
+
+Supports both `handler` and `main` functions (handler takes priority):
 
 ```python
-# 一些处理代码
-print("Processing...")
+import pandas as pd
 
-# 可以使用handler函数（优先）或main函数
+# This function takes priority
 def handler(args):
-    # args包含通过-p/--params传递的参数
-    print(f"Received args: {args}")
-    
-    # 返回最终结果
-    return f"Hello from Python! Args: {args}"
+    print(f"Processing: {args}")
+    data = pd.DataFrame({"a": [1, 2, 3]})
+    return {"result": data.to_dict()}
 
-# 或者使用main函数
+# This function is used if handler is not defined
 def main(args):
-    # args包含通过-p/--params传递的参数
-    print(f"Received args: {args}")
-    
-    # 返回最终结果
-    return f"Hello from Python! Args: {args}"
+    return {"result": "Using main instead"}
 ```
 
-## 系统要求
+### Parameter Passing
 
-- Rust 1.85 或更高版本
-- 对于JavaScript/TypeScript执行：Deno
-- 对于Python执行：Python 3.8+
+Parameters are passed to your handler function:
 
-## 许可证
+```bash
+run_code_rmcp js -f script.js -p '{"name": "User", "count": 42}'
+```
 
-本项目采用 Apache License 2.0 发布。详见根目录的 `LICENSE` 与 `NOTICE` 文件。
+In your code:
+```javascript
+function handler(input) {
+    // input = { name: "User", count: 42 }
+    return `Hello ${input.name}, count: ${input.count}`;
+}
+```
+
+### Python Dependencies
+
+Python dependencies are automatically detected and installed:
+
+```python
+import requests
+import pandas as pd
+
+def handler(args):
+    # Dependencies are automatically installed via uv
+    response = requests.get("https://api.example.com")
+    data = pd.DataFrame(response.json())
+    return data.to_dict()
+```
+
+### Log Capture
+
+All console output is captured separately from the return value:
+
+```javascript
+console.log("This goes to logs");
+console.log("So does this");
+
+function handler() {
+    return "This is the result";
+}
+```
+
+Result:
+```json
+{
+  "logs": ["This goes to logs", "So does this"],
+  "result": "This is the result",
+  "error": null
+}
+```
+
+## Development
+
+```bash
+# Build
+cargo build
+
+# Run with cargo
+cargo run -- --show-logs js -f fixtures/test_js.js
+
+# Run tests
+cargo test
+
+# Build with MCP feature
+cargo build --features mcp
+
+# Run MCP server with cargo
+cargo run --bin script_runner --features mcp
+```
+
+## Environment Pre-warming
+
+The project includes a warm-up function to cache common dependencies:
+
+```rust
+use run_code_rmcp::warm_up_all_envs;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    // Pre-install common Python and JS/TS dependencies
+    warm_up_all_envs(None, None, None, None).await?;
+    Ok(())
+}
+```
+
+## TODO
+
+- [ ] TTS (Text-to-Speech) functionality - Currently has known issues
+
+## License
+
+This project is licensed under the Apache License 2.0. See `LICENSE` and `NOTICE` files in the root directory for details.

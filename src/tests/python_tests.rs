@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[allow(clippy::module_inception)]
 mod python_tests {
     use anyhow::Result;
     use log::info;

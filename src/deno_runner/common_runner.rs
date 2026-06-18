@@ -3,11 +3,7 @@ use crate::model::{CodeExecutor, CodeScriptExecutionResult, CommandExecutor, Lan
 use anyhow::Result;
 use log::{debug, error, info};
 use serde_json::Value;
-use std::io::Write;
-use std::path::PathBuf;
-use tempfile::NamedTempFile;
 use tokio::fs;
-use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
 
 /// 通用的 Deno 脚本执行逻辑，供 JS/TS Runner 复用
@@ -63,7 +59,6 @@ where
         std::fs::write(&temp_file_path, params_json.as_bytes())?;
 
         // 保持TempDir存在（这样文件就不会被删除）
-        let temp_dir_path = temp_dir.path().to_path_buf();
         std::mem::forget(temp_dir);
 
         // 设置环境变量指向临时文件

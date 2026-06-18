@@ -1,3 +1,3 @@
 mod mcp_server;
 
-pub use mcp_server::{CodeRunnerService,CodeRunRequest};
+pub use mcp_server::{CodeRunnerService, CodeRunRequest};

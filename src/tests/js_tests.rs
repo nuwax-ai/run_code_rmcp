@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[allow(clippy::module_inception)]
 mod js_tests {
     use anyhow::Result;
     use log::info;
@@ -267,10 +268,10 @@ async function handler(input) {
             assert!(json_str.contains("message"), "结果应包含 message 字段");
 
             // 检查计算结果是否正确 (5 + 7 = 12)
-            if let Some(obj) = result_val.as_object() {
-                if let Some(message) = obj.get("message") {
-                    assert_eq!(message, 12, "message 字段的值应为 12");
-                }
+            if let Some(obj) = result_val.as_object()
+                && let Some(message) = obj.get("message")
+            {
+                assert_eq!(message, 12, "message 字段的值应为 12");
             }
         }
 
@@ -647,10 +648,10 @@ async function handler(input) {
             assert!(json_str.contains("value"), "key 字段的值应为 value");
             
             // 检查JSON结构
-            if let Some(obj) = result_val.as_object() {
-                if let Some(key_value) = obj.get("key") {
-                    assert_eq!(key_value, "value", "key 字段的值应为 value");
-                }
+            if let Some(obj) = result_val.as_object()
+                && let Some(key_value) = obj.get("key")
+            {
+                assert_eq!(key_value, "value", "key 字段的值应为 value");
             }
         }
 

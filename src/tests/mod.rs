@@ -20,10 +20,10 @@ pub mod test_utils {
         });
 
         // 只有当环境变量设置为"1"时才清理缓存
-        if let Ok(clean_cache) = std::env::var(CLEAN_CACHE_ENV) {
-            if clean_cache == "1" {
-                clean_cache_dir();
-            }
+        if let Ok(clean_cache) = std::env::var(CLEAN_CACHE_ENV)
+            && clean_cache == "1"
+        {
+            clean_cache_dir();
         }
     }
 
@@ -37,15 +37,13 @@ pub mod test_utils {
 
             match fs::read_dir(cache_dir) {
                 Ok(entries) => {
-                    for entry in entries {
-                        if let Ok(entry) = entry {
-                            let path = entry.path();
-                            if path.is_file() {
-                                if let Err(e) = fs::remove_file(&path) {
-                                    info!("删除文件失败 {path:?}: {e}");
-                                } else {
-                                    info!("已删除缓存文件: {path:?}");
-                                }
+                    for entry in entries.flatten() {
+                        let path = entry.path();
+                        if path.is_file() {
+                            if let Err(e) = fs::remove_file(&path) {
+                                info!("删除文件失败 {path:?}: {e}");
+                            } else {
+                                info!("已删除缓存文件: {path:?}");
                             }
                         }
                     }
@@ -66,10 +64,10 @@ pub mod test_utils {
         }
 
         // 确保缓存目录存在且可写
-        if !cache_dir.exists() {
-            if let Err(e) = fs::create_dir_all(cache_dir) {
-                info!("创建缓存目录失败: {e}");
-            }
+        if !cache_dir.exists()
+            && let Err(e) = fs::create_dir_all(cache_dir)
+        {
+            info!("创建缓存目录失败: {e}");
         }
 
         // 设置目录权限为777（所有用户可读写执行）

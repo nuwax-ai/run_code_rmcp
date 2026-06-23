@@ -814,14 +814,13 @@ dependencies = [
 
 [[package]]
 name = "run_code_rmcp"
-version = "0.0.36"
+version = "0.0.37"
 dependencies = [
  "anyhow",
  "async-trait",
  "blake3",
  "clap",
  "env_logger",
- "libc",
  "log",
  "once_cell",
  "pest",

@@ -87,14 +87,13 @@ impl CodeFileCache {
 
         while let Some(entry) = entries.next_entry().await? {
             let path = entry.path();
-            if let Some(file_name) = path.file_name() {
-                if let Some(name_str) = file_name.to_str() {
-                    if name_str.ends_with(suffix) {
-                        fs::remove_file(&path)
-                            .await
-                            .with_context(|| format!("无法删除缓存文件: {}", path.display()))?;
-                    }
-                }
+            if let Some(file_name) = path.file_name()
+                && let Some(name_str) = file_name.to_str()
+                && name_str.ends_with(suffix)
+            {
+                fs::remove_file(&path)
+                    .await
+                    .with_context(|| format!("无法删除缓存文件: {}", path.display()))?;
             }
         }
 

@@ -4,16 +4,8 @@ use log::{error, info};
 use serde_json::Value;
 use std::{fs, path::PathBuf};
 
-mod app_error;
-mod cache;
-mod deno_runner;
-#[cfg(feature = "mcp")]
-mod mcp;
-mod model;
-mod python_runner;
-
-use crate::cache::CodeFileCache;
-use crate::model::{CodeExecutor, CodeScriptExecutionResult, LanguageScript};
+use run_code_rmcp::CodeFileCache;
+use run_code_rmcp::{CodeExecutor, CodeScriptExecutionResult, LanguageScript};
 
 #[derive(Parser)]
 #[command(name = "run_code_rmcp")]

@@ -12,7 +12,6 @@ use serde_json::Value;
 use std::future::Future;
 use tokio::{
     io,
-    process::Command,
     time::{Duration, Sleep, sleep},
 };
 
@@ -170,49 +169,6 @@ impl CodeExecutor {
                 "Failed to extract structured output: {stderr_str}"
             )),
         })
-    }
-}
-
-/// 封装 tokio::command 的执行,并设置堆大小限制
-#[allow(dead_code)]
-pub struct TokioHeapSize {
-    //堆大小限制
-    pub heap_size: u64,
-}
-
-impl Default for TokioHeapSize {
-    fn default() -> Self {
-        // 堆大小限制为 2GB
-        Self::new(2048 * 1024 * 1024)
-    }
-}
-
-impl TokioHeapSize {
-    pub fn new(heap_size: u64) -> Self {
-        Self { heap_size }
-    }
-
-    /// 启动带有堆内存限制的子进程，返回 tokio::process::Child
-    #[allow(dead_code)]
-    pub async fn with_heap_limit(&self, command: &mut Command) {
-        #[cfg(target_os = "linux")]
-        {
-            use libc::{RLIMIT_AS, rlimit, setrlimit};
-            let heap_size = self.heap_size.clone();
-            unsafe {
-                command.pre_exec(move || {
-                    let rlim = rlimit {
-                        rlim_cur: heap_size,
-                        rlim_max: heap_size,
-                    };
-                    if setrlimit(RLIMIT_AS, &rlim) != 0 {
-                        return Err(std::io::Error::last_os_error());
-                    }
-                    Ok(())
-                });
-            }
-        }
-        // macOS/Windows 下不做限制
     }
 }
 

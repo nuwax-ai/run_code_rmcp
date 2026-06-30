@@ -6,11 +6,7 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use log::{debug, error, info, warn};
-use std::io::Write;
-use std::path::PathBuf;
-use tempfile::NamedTempFile;
 use tokio::fs;
-use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
 
 #[derive(Default)]
@@ -122,7 +118,6 @@ impl RunCode for PythonRunner {
             std::fs::write(&temp_file_path, params_json.as_bytes())?;
 
             // 保持TempDir存在（这样文件就不会被删除）
-            let temp_dir_path = temp_dir.path().to_path_buf();
             std::mem::forget(temp_dir);
 
             // 设置环境变量指向临时文件
@@ -137,12 +132,6 @@ impl RunCode for PythonRunner {
         };
 
         info!("执行命令: {:?}", &execute_command);
-
-        // let tokio_child_command = TokioHeapSize::default();
-        // // 设置堆大小限制
-        // tokio_child_command
-        //     .with_heap_limit(&mut execute_command)
-        //     .await;
 
         //限制command 的执行超时时间
         let executor = match timeout_seconds {

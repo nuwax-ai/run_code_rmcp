@@ -4,14 +4,7 @@ use log::{error, info};
 use rmcp::ServiceExt;
 use tokio::io::{stdin, stdout};
 
-mod app_error;
-mod cache;
-mod deno_runner;
-mod mcp;
-mod model;
-mod python_runner;
-
-use mcp::CodeRunnerService;
+use run_code_rmcp::mcp::CodeRunnerService;
 
 /// MCP脚本运行器 - 通过MCP协议执行JavaScript、TypeScript和Python代码
 #[derive(Parser)]
@@ -32,7 +25,7 @@ async fn start_mcp_server(verbose: bool) -> Result<()> {
     }
 
     // 创建服务实例
-    let service = CodeRunnerService::default();
+    let service = CodeRunnerService;
 
     // 使用标准输入输出作为传输方式
     let transport = (stdin(), stdout());
@@ -69,7 +62,7 @@ async fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rmcp::{model::CallToolRequestParam, ServiceExt};
+    use rmcp::{model::CallToolRequestParams, ServiceExt};
     use tokio::sync::oneshot;
     use tokio::time::timeout;
     use std::time::Duration;
@@ -90,7 +83,7 @@ mod tests {
         // 在单独的任务中启动服务器
         let server_task = tokio::spawn(async move {
             // 创建服务实例
-            let service = CodeRunnerService::default();
+            let service = CodeRunnerService;
 
             // 创建服务Future并pin
             let service_fut = service.serve((server_read, server_write));
@@ -126,15 +119,17 @@ mod tests {
         println!("服务器信息: {:?}", server_info);
 
         // 验证服务器信息
-        assert!(!server_info.unwrap().instructions.is_none(), "服务器应该提供说明");
+        assert!(server_info.unwrap().instructions.is_some(), "服务器应该提供说明");
         
         // 测试执行JavaScript代码
         let js_code = "function handler(input) { return {success: true, message: 'JavaScript测试成功'}; }";
-        let result = client.call_tool(CallToolRequestParam {
+        let result = client.call_tool(CallToolRequestParams {
+            meta: None,
             name: "run_javascript".into(),
             arguments: serde_json::json!({
                 "code": js_code,
             }).as_object().cloned(),
+            task: None,
         }).await?;
 
         // 验证JavaScript结果，这里只简单验证调用成功
@@ -142,11 +137,13 @@ mod tests {
         
         // 测试执行Python代码
         let py_code = "def handler(input):\n    return {'success': True, 'message': 'Python测试成功'}";
-        let result = client.call_tool(CallToolRequestParam {
+        let result = client.call_tool(CallToolRequestParams {
+            meta: None,
             name: "run_python".into(),
             arguments: serde_json::json!({
                 "code": py_code,
             }).as_object().cloned(),
+            task: None,
         }).await?;
 
         // 验证Python结果，这里只简单验证调用成功
